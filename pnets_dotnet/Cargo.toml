@@ -17,4 +17,4 @@ include = ["src/**/*.rs", "README.md", "LICENSE-APACHE", "LICENSE-MIT"]
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-pnets = { path = "../pnets" }
+pnets = { path = "../pnets", version = "0.1" }
