@@ -4,7 +4,7 @@ use std::fmt::Formatter;
 
 use crate::{arc, PlaceId, TransitionId};
 
-/// Errors generated when manipulating a petri network
+/// Errors generated when manipulating a Petri net
 #[derive(Debug)]
 pub enum NetError {
     /// There is at least one cyclic priority (t1 > t0 > t1 for example)
@@ -22,7 +22,7 @@ pub enum NetError {
 impl fmt::Display for NetError {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         match self {
-            NetError::CyclicPriorities => write!(f, "Cyclic priorities in petri net"),
+            NetError::CyclicPriorities => write!(f, "Cyclic priorities in Petri net"),
             NetError::InvalidTimeRange => write!(f, "Invalid time range found"),
             NetError::UnsupportedArc(arc) => {
                 write!(f, "Unsupported arc {}", arc)

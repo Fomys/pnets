@@ -1,4 +1,4 @@
-//! Time range for timed net
+//! Time range for timed Petri net
 use std::fmt;
 use std::fmt::Formatter;
 
@@ -23,7 +23,7 @@ impl fmt::Display for Bound {
     }
 }
 
-/// Represent a timerange in the petri network
+/// Represent a timerange in the Petri net
 #[derive(Debug, Eq, PartialEq, Copy, Clone)]
 pub struct TimeRange {
     /// Start of the time range

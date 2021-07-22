@@ -1,6 +1,6 @@
-//! Standard petri network
+//! Standard Petri net
 //!
-//! Represent a petri network with only places, transitions, consume and produce arcs.
+//! Represent a Petri net with only places, transitions, consume and produce arcs.
 
 pub use net::Net;
 pub use place::Place;

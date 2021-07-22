@@ -6,12 +6,12 @@ use indexed_vec::IndexVec;
 use crate::standard::{Place, Transition};
 use crate::{arc, timed, NetError, PlaceId, TransitionId};
 
-/// Standard petri network, with only produce and consume arcs
+/// Standard Petri net, with only produce and consume arcs
 ///
 /// This structure is indexed with [`PlaceId`] and [`TransitionId`] to allow easy access to places
 /// and transitions.
 ///
-/// As this kind of network is a subset of timed petri net, so we can create one from timed petri
+/// As this kind of network is a subset of timed Petri net, so we can create one from timed Petri
 /// net (but you loose [`arc::Kind::Inhibitor`], [`arc::Kind::StopWatch`] and
 /// [`arc::Kind::StopWatchInhibitor`] arcs and timings).
 #[derive(Default, Debug, Clone)]
@@ -67,7 +67,7 @@ impl From<timed::Net> for Net {
             net[i].label = place.label;
         }
 
-        // Copy transitions and arcs from timed petri net
+        // Copy transitions and arcs from timed Petri net
         for transition in timed.transitions {
             let new_tr = net.create_transition();
             net[new_tr].name = transition.name;

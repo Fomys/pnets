@@ -1,16 +1,16 @@
 #![forbid(missing_docs)]
 
 //! # PNETS
-//! Pnets is a framework for manipulating petri networks
+//! Pnets is a framework for manipulating Petri networks
 //!
 //!
-//! This crate provides an api for manipulating petri nets.
+//! This crate provides an api for manipulating Petri net.
 //! Two main structures are provided by this library:
-//! - [`standard::Net`] - which allows to manipulate classical petri nets;
-//! - [`timed::Net`] - which allows the manipulation of temporal petri nets.
+//! - [`standard::Net`] - which allows to manipulate classical Petri net;
+//! - [`timed::Net`] - which allows the manipulation of temporal Petri net.
 //!
 //! In order to easily manipulate these nets this api provides the following elements:
-//! - [`arc::Kind`] - an enum of the different types of arcs that exist in a petri net;
+//! - [`arc::Kind`] - an enum of the different types of arcs that exist in a Petri net;
 //! - [`Marking`] - a structure for manipulating hollow vectors;
 //! - [`PlaceId`] and [`TransitionId`] - a type for indexing places and transitions in networks.
 //!

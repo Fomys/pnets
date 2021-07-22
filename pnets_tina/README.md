@@ -1,7 +1,7 @@
 # PNETS tina
 
 **Pnets tina is a [tina](http://projects.laas.fr/tina/manuals/formats.html#2) file parser for
-the [pnets](https://crates.io/pnets) framework**
+the [pnets](https://crates.io/crates/pnets) framework**
 
 - [crates.io](https://crates.io/crates/pnets_tina)
 - [docs.rs](https://docs.rs/pnets_tina)

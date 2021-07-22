@@ -6,13 +6,13 @@ use indexed_vec::IndexVec;
 use crate::timed::{Place, Transition};
 use crate::{arc, standard, NetError, PlaceId, TransitionId};
 
-/// Timed petri network, with produce, consume, condition and inhibitors arcs
+/// Timed Petri net, with produce, consume, condition and inhibitors arcs
 ///
 /// This structure is indexed with [`PlaceId`] and [`TransitionId`] to allow easy access to places
 /// and transitions.
 ///
-/// As this kind of network is a superset of standard petri net, we can create one from standard
-/// petri net without loosing any informations.
+/// As this kind of network is a superset of standard Petri net, we can create one from standard
+/// Petri net without loosing any informations.
 #[derive(Debug, Default)]
 pub struct Net {
     /// Name of this network
@@ -67,7 +67,7 @@ impl From<standard::Net> for Net {
             net[new_pl].label = place.label;
         }
 
-        // Copy transitions and arcs from timed petri net
+        // Copy transitions and arcs from timed Petri net
         for transition in standard.transitions {
             let new_tr = net.create_transition();
             net[new_tr].name = transition.name;

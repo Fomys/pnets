@@ -4,7 +4,7 @@ use std::fmt::Formatter;
 
 use crate::net::{PlaceId, TransitionId};
 
-/// All kind of arc which can be inserted in the petri net
+/// All kind of arc which can be inserted in the Ptri net
 ///
 /// All arcs have is stored with (destination, source, weight)
 #[derive(Debug, Clone, Eq, PartialEq)]
