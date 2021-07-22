@@ -1,0 +1,29 @@
+tr t1 [0,1] p0 -> p1
+tr t0 : a [1,3[ p0*3 -> p1
+tr t0 -> p4
+# authorized by ndrio, we compute the intersection of timing intervals.
+# we raise an error if the intersection is empty.
+tr t0 ]2,6[
+tr t5 : {\{a\}} -> p0
+# Comments disappear.
+tr t2 : {b s} [0,0] p1?-4K ->
+# Likewise for trivial time intervals
+tr t3 [0,w[ p2 ->
+pl p2 (1)
+pl p4 : a
+# authorized by ndrio, final label is b
+pl p4 : b
+pl p4
+pr t3 > t2
+pr t3 > t1
+tr t1 [0,1] p0 -> p1
+tr t0 : a ]2,3[ p0*3 -> p1 p4
+pr t3 t3 > t1
+tr t5 : {\{a\}} [0,w[ -> p0
+pl p4 : b t4 -> t5 t6?1
+tr t2 : {b s} [0,0] p1?-4K ->
+tr t3 [0,w[ p2 ->
+pl p2 (1)
+pr t0 < t1
+pr t3 t6 > t2 t1
+net demo

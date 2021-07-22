@@ -1,0 +1,20 @@
+[package]
+name = "pnets_dotnet"
+version = "0.1.0"
+authors = ["Louis Chauvet <louis.chauvet@free.fr>"]
+edition = "2018"
+description = "A parser for dotnet petri networks"
+documentation = "https://docs.rs/pnets_dotnet/"
+readme = "README.md"
+homepage = "https://github.com/fomys/pnets/pnets_dotnet"
+repository = "https://github.com/fomys/pnets"
+license = "MIT OR Apache-2.0"
+keywords = ["petri", ]
+categories = ["mathematics", "science", "parser-implementations"]
+include = ["src/**/*.rs", "README.md", "LICENSE-APACHE", "LICENSE-MIT"]
+
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+pnets = { path = "../pnets" }

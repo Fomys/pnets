@@ -1,0 +1,19 @@
+[package]
+name = "pnets"
+version = "0.1.0"
+authors = ["Louis Chauvet <louis.chauvet@free.fr>"]
+edition = "2018"
+description = "A framework for petri net manipulation"
+documentation = "https://docs.rs/pnets/"
+readme = "README.md"
+homepage = "https://github.com/fomys/pnets/pnets"
+repository = "https://github.com/fomys/pnets"
+license = "MIT OR Apache-2.0"
+keywords = ["petri", ]
+categories = ["mathematics", "science"]
+include = ["src/**/*.rs", "README.md", "LICENSE-APACHE", "LICENSE-MIT"]
+
+[dependencies]
+custom_derive = "0.1"
+newtype_derive = "0.1"
+indexed_vec = "1.2"
