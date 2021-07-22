@@ -3,7 +3,7 @@ use pnets::timed::{Bound, TimeRange};
 
 #[test]
 fn name_test() {
-    let parser = pnets_dotnet::Parser::new("net Name".as_bytes());
+    let parser = pnets_tina::Parser::new("net Name".as_bytes());
     let net = parser.parse().unwrap();
     assert_eq!(net.name, "Name".to_string())
 }
@@ -12,7 +12,7 @@ fn name_test() {
 #[test]
 #[should_panic]
 fn label_test() {
-    let parser = pnets_dotnet::Parser::new(
+    let parser = pnets_tina::Parser::new(
         "tr t0 p0 -> p1\nlb t0 {transition}\nlb p0 {place 0}\nlb p1 {place 1}".as_bytes(),
     );
     parser.parse().unwrap();
@@ -20,7 +20,7 @@ fn label_test() {
 
 #[test]
 fn transition_test() {
-    let parser = pnets_dotnet::Parser::new(
+    let parser = pnets_tina::Parser::new(
         "tr t0 : transition_label [1,5] p0*3 p2?4 p3?-2 -> p1".as_bytes(),
     );
 
@@ -92,13 +92,13 @@ fn transition_test() {
 #[test]
 #[should_panic]
 fn name_test_invalid_identifier() {
-    let parser = pnets_dotnet::Parser::new("net *".as_bytes());
+    let parser = pnets_tina::Parser::new("net *".as_bytes());
     parser.parse().unwrap();
 }
 
 #[test]
 fn place_test() {
-    let parser = pnets_dotnet::Parser::new("pl p0 : label (43K) t0 -> t1 t2?1M t3?-2K".as_bytes());
+    let parser = pnets_tina::Parser::new("pl p0 : label (43K) t0 -> t1 t2?1M t3?-2K".as_bytes());
     let net = parser.parse().unwrap();
 
     let p0 = net.search_place_by_name(&"p0".to_string()).unwrap();
@@ -159,36 +159,36 @@ fn place_test() {
 
 #[test]
 fn note_test() {
-    let parser = pnets_dotnet::Parser::new("nt note 0 {This is a note}".as_bytes());
+    let parser = pnets_tina::Parser::new("nt note 0 {This is a note}".as_bytes());
     parser.parse().unwrap();
 }
 
 #[test]
 fn priority_test() {
-    let parser = pnets_dotnet::Parser::new("".as_bytes());
+    let parser = pnets_tina::Parser::new("".as_bytes());
     parser.parse().unwrap();
 }
 
 #[test]
 fn demo_test() {
-    let parser = pnets_dotnet::Parser::new(include_str!("demo.net").as_bytes());
+    let parser = pnets_tina::Parser::new(include_str!("demo.net").as_bytes());
     parser.parse().unwrap();
 }
 
 #[test]
 fn abp_test() {
-    let parser = pnets_dotnet::Parser::new(include_str!("abp.net").as_bytes());
+    let parser = pnets_tina::Parser::new(include_str!("abp.net").as_bytes());
     parser.parse().unwrap();
 }
 
 #[test]
 fn ifip_test() {
-    let parser = pnets_dotnet::Parser::new(include_str!("ifip.net").as_bytes());
+    let parser = pnets_tina::Parser::new(include_str!("ifip.net").as_bytes());
     parser.parse().unwrap();
 }
 
 #[test]
 fn sokoban_3_test() {
-    let parser = pnets_dotnet::Parser::new(include_str!("sokoban_3.net").as_bytes());
+    let parser = pnets_tina::Parser::new(include_str!("sokoban_3.net").as_bytes());
     parser.parse().unwrap();
 }

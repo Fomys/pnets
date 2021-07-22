@@ -4,7 +4,7 @@ use std::io::Write;
 use pnets::timed::{Bound, TimeRange};
 use pnets::{standard, timed, NetError};
 
-/// Create a new dotnet exporter from parameters
+/// Create a new tina exporter from parameters
 pub struct ExporterBuilder<W: Write> {
     writer: W,
     without_disconnected_transitions: bool,
@@ -49,7 +49,7 @@ where
     }
 }
 
-/// Exporter for [dotnet]() format.
+/// Exporter for [tina]() format.
 ///
 /// It consume a network ([`pnets::standard::Net`] or [`pnets::timed::Net`]) and it write its
 /// representation in the writer.

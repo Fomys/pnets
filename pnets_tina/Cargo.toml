@@ -1,12 +1,12 @@
 [package]
-name = "pnets_dotnet"
+name = "pnets_tina"
 version = "0.1.0"
 authors = ["Louis Chauvet <louis.chauvet@free.fr>"]
 edition = "2018"
-description = "A parser for dotnet petri networks"
-documentation = "https://docs.rs/pnets_dotnet/"
+description = "A parser for tina Petri net"
+documentation = "https://docs.rs/pnets_tina/"
 readme = "README.md"
-homepage = "https://github.com/fomys/pnets/tree/master/pnets_dotnet"
+homepage = "https://github.com/fomys/pnets/tree/master/pnets_tina"
 repository = "https://github.com/fomys/pnets"
 license = "MIT OR Apache-2.0"
 keywords = ["petri", ]

@@ -1,5 +1,5 @@
 [workspace]
 members = [
     "pnets",
-    "pnets_dotnet",
+    "pnets_tina",
 ]

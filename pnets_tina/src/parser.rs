@@ -19,7 +19,7 @@ pub struct Position {
     pub column: usize,
 }
 
-/// Exporter for [dotnet]() format.
+/// Exporter for [tina]() format.
 ///
 /// It consume a reader and creates a [`pnet::timed::Net`]
 pub struct Parser<R: BufRead> {
