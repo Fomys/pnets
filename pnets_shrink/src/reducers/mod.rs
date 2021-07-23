@@ -4,7 +4,7 @@
 pub use chain_reducer::*;
 pub use identity_reducer::IdentityReducer;
 pub use loop_reducer::LoopReducer;
-pub use reduce::{PlaceReduce, Reduce, TransitionReduce};
+pub use reduce::{ConservativeReduce, PlaceReduce, Reduce, TransitionReduce};
 pub use smart_reducer::SmartReducer;
 
 mod chain_reducer;
