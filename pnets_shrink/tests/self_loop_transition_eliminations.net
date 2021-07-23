@@ -1,0 +1,4 @@
+tr t1 [0,w[ p1 -> p1
+pl p1 (5)
+net self_loop_transition_elimination
+

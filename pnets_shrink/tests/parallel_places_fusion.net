@@ -1,0 +1,4 @@
+tr t0 [0,w[ -> p2 p1
+tr t2 [0,w[ p2 p1 ->
+net parallel_places_fusion
+

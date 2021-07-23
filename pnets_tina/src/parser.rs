@@ -21,7 +21,7 @@ pub struct Position {
 
 /// Exporter for [tina]() format.
 ///
-/// It consume a reader and creates a [`pnet::timed::Net`]
+/// It consume a reader and creates a [`pnets::timed::Net`]
 pub struct Parser<R: BufRead> {
     lexer: Lexer<R>,
     transition_index: HashMap<String, TransitionId>,

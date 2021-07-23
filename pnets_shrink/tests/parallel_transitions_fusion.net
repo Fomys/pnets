@@ -1,0 +1,4 @@
+tr t0 p0 -> p1
+tr t1 p0 -> p1
+net parallel_transitions_fusion
+
