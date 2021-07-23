@@ -1,4 +1,4 @@
-//! Time range for timed Petri net
+//! Time range for timed Petri nets
 use std::fmt;
 use std::fmt::Formatter;
 

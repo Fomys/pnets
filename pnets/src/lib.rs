@@ -1,10 +1,10 @@
 #![forbid(missing_docs)]
 
 //! # PNETS
-//! Pnets is a framework for manipulating Petri networks
+//! Pnets is a framework for manipulating Petri nets
 //!
 //!
-//! This crate provides an api for manipulating Petri net.
+//! This crate provides an api for manipulating Petri nets.
 //! Two main structures are provided by this library:
 //! - [`standard::Net`] - which allows to manipulate classical Petri net;
 //! - [`timed::Net`] - which allows the manipulation of temporal Petri net.

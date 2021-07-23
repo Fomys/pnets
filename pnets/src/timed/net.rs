@@ -67,7 +67,7 @@ impl From<standard::Net> for Net {
             net[new_pl].label = place.label;
         }
 
-        // Copy transitions and arcs from timed Petri net
+        // Copy transitions and arcs from timed Petri nets
         for transition in standard.transitions {
             let new_tr = net.create_transition();
             net[new_tr].name = transition.name;

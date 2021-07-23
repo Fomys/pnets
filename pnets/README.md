@@ -1,13 +1,13 @@
 # PNETS
 
-**Pnets is a framework for manipulating Petri net**
+**Pnets is a framework for manipulating Petri nets**
 
 - [crates.io](https://crates.io/crates/pnets)
 - [docs.rs](https://docs.rs/pnets)
 
 ---
 
-This crate provides an api for manipulating Petri net. Two main structures are provided by this library:
+This crate provides an api for manipulating Petri nets. Two main structures are provided by this library:
 
 - [`standard::Net`](https://docs.rs/pnets/latest/pnets/standard/struct.Net.html) - which allows to manipulate classical Petri
   net;
