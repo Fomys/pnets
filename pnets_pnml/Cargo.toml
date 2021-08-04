@@ -1,0 +1,21 @@
+[package]
+name = "pnets_pnml"
+version = "0.1.0"
+authors = ["Louis Chauvet <louis.chauvet@free.fr>"]
+edition = "2018"
+description = "A parser for PNML Petri net format"
+documentation = "https://docs.rs/pnets_pnml/"
+readme = "README.md"
+homepage = "https://github.com/Fomys/pnets/tree/master/pnets_pnml"
+repository = "https://github.com/fomys/pnets"
+license = "MIT OR Apache-2.0"
+keywords = ["petri", ]
+categories = ["mathematics", "science"]
+include = ["src/**/*.rs", "README.md", "LICENSE-APACHE", "LICENSE-MIT"]
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+quick-xml = { version = "0.21", features = [ "serialize" ] }
+serde = {version="1.0", features = ["derive"]}
+pnets = { path = "../pnets", version = "0.1" }
