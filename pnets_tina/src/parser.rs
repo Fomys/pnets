@@ -1,14 +1,14 @@
-use std::collections::HashMap;
 use std::error::Error;
-use std::io::BufRead;
 
-use pnets::arc;
 use pnets::timed::{Net, TimeRange};
+use pnets::{arc, NetError, NodeId};
 use pnets::{PlaceId, TransitionId};
 
 use crate::lexer::Lexer;
 use crate::token;
+use crate::token::Kind;
 use crate::ParserError;
+use std::io::BufRead;
 
 /// Position in a file
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
@@ -24,16 +24,12 @@ pub struct Position {
 /// It consume a reader and creates a [`pnets::timed::Net`]
 pub struct Parser<R: BufRead> {
     lexer: Lexer<R>,
-    transition_index: HashMap<String, TransitionId>,
-    place_index: HashMap<String, PlaceId>,
     net: Net,
 }
 
-impl<R> pnets::io::Parse<Net> for Parser<R>
-where
-    R: BufRead,
-{
-    fn parse(mut self) -> Result<Net, Box<dyn Error>> {
+impl<R: BufRead> Parser<R> {
+    /// Parse a timed net from a reader
+    pub fn parse(mut self) -> Result<Net, Box<dyn Error>> {
         loop {
             let token = self.lexer.peek()?;
 
@@ -45,7 +41,7 @@ where
                 token::Kind::Transition => self.parse_transition()?,
                 token::Kind::Place => self.parse_place()?,
                 token::Kind::Note => self.parse_note()?,
-                token::Kind::Label => unimplemented!(),
+                token::Kind::Label => self.parse_label()?,
                 token::Kind::Priority => self.parse_priority()?,
                 token::Kind::EndOfFile => break,
                 _ => {
@@ -58,9 +54,7 @@ where
         }
         Ok(self.net)
     }
-}
 
-impl<R: BufRead> Parser<R> {
     /// Create a new parser from reader
     ///
     /// ```ignore
@@ -69,35 +63,68 @@ impl<R: BufRead> Parser<R> {
     pub fn new(reader: R) -> Self {
         Self {
             lexer: Lexer::new(reader),
-            transition_index: HashMap::default(),
-            place_index: HashMap::default(),
             net: Net::default(),
         }
     }
 
     /// Get transition from net or create one
-    fn get_or_create_transition(&mut self, name: &str) -> TransitionId {
-        match self.transition_index.get(name) {
+    fn get_or_create_transition(&mut self, name: &str) -> Result<TransitionId, Box<dyn Error>> {
+        match self.net.get_index_by_name(name) {
+            Some(NodeId::Transition(id)) => Ok(id),
+            Some(NodeId::Place(_)) => Err(Box::new(NetError::DuplicatedName(name.to_string()))),
             None => {
                 let tr = self.net.create_transition();
-                self.net[tr].name = name.to_string();
-                self.transition_index.insert(name.to_string(), tr);
-                tr
+                self.net.rename_node(NodeId::Transition(tr), name)?;
+                Ok(tr)
             }
-            Some(i) => *i,
         }
     }
 
     /// Get place from net or create one
-    fn get_or_create_place(&mut self, name: &str) -> PlaceId {
-        match self.place_index.get(name) {
+    fn get_or_create_place(&mut self, name: &str) -> Result<PlaceId, Box<dyn Error>> {
+        match self.net.get_index_by_name(name) {
+            Some(NodeId::Place(id)) => Ok(id),
+            Some(NodeId::Transition(_)) => {
+                Err(Box::new(NetError::DuplicatedName(name.to_string())))
+            }
             None => {
                 let pl = self.net.create_place();
-                self.net[pl].name = name.to_string();
-                self.place_index.insert(name.to_string(), pl);
-                pl
+                self.net.rename_node(NodeId::Place(pl), name)?;
+                Ok(pl)
             }
-            Some(pl) => *pl,
+        }
+    }
+
+    /// Parse the label token
+    fn parse_label(&mut self) -> Result<(), Box<dyn Error>> {
+        self.lexer.read()?;
+        let token = self.lexer.read()?;
+        match token.kind {
+            Kind::Identifier(identifier) => {
+                let index = match self.net.get_index_by_name(&identifier) {
+                    None => return Err(Box::new(NetError::UnknownIdentifier(identifier))),
+                    Some(index) => index,
+                };
+                let token = self.lexer.read()?;
+                match token.kind {
+                    Kind::Identifier(identifier) => {
+                        match index {
+                            NodeId::Place(pl) => self.net[pl].label = Some(identifier),
+                            NodeId::Transition(tr) => self.net[tr].label = Some(identifier),
+                        }
+                        Ok(())
+                    }
+
+                    _ => Err(Box::new(ParserError::UnexpectedToken(
+                        token,
+                        "Expected TokenKind::Identifier(_)".to_string(),
+                    ))),
+                }
+            }
+            _ => Err(Box::new(ParserError::UnexpectedToken(
+                token,
+                "Expected TokenKind::Identifier(_)".to_string(),
+            ))),
         }
     }
 
@@ -130,13 +157,13 @@ impl<R: BufRead> Parser<R> {
             }
         };
 
-        let tr = self.get_or_create_transition(&transition_name);
+        let tr = self.get_or_create_transition(&transition_name)?;
 
         // Try to read label
         if self.lexer.peek()?.kind == token::Kind::InlineLabel {
             self.lexer.read()?;
             match self.lexer.read()?.kind {
-                token::Kind::Identifier(label) => self.net[tr].label = label,
+                token::Kind::Identifier(label) => self.net[tr].label = Some(label),
                 _ => {
                     return Err(Box::new(ParserError::UnexpectedToken(
                         self.lexer.current_token.clone(),
@@ -162,10 +189,10 @@ impl<R: BufRead> Parser<R> {
                     token::Kind::Identifier(name) => name,
                     _ => break,
                 };
-                let place = self.get_or_create_place(identifier);
+                let pl = self.get_or_create_place(identifier)?;
                 self.lexer.read()?;
 
-                let new_arc = self.parse_transition_input_arc(place, tr)?;
+                let new_arc = self.parse_transition_input_arc(pl, tr)?;
                 self.net.add_arc(new_arc)?;
             }
 
@@ -177,9 +204,9 @@ impl<R: BufRead> Parser<R> {
                     token::Kind::Identifier(name) => name,
                     _ => break,
                 };
-                let place = self.get_or_create_place(identifier);
+                let pl = self.get_or_create_place(identifier)?;
                 self.lexer.read()?;
-                let new_arc = self.parse_transition_output_arc(place, tr)?;
+                let new_arc = self.parse_transition_output_arc(pl, tr)?;
                 self.net.add_arc(new_arc)?;
             }
         }
@@ -285,8 +312,8 @@ impl<R: BufRead> Parser<R> {
     /// Parse a place line
     fn parse_place(&mut self) -> Result<(), Box<dyn Error>> {
         self.lexer.read()?;
-        let place = match self.lexer.read()?.kind {
-            token::Kind::Identifier(name) => self.get_or_create_place(&name),
+        let pl = match self.lexer.read()?.kind {
+            token::Kind::Identifier(name) => self.get_or_create_place(&name)?,
             _ => {
                 return Err(Box::new(ParserError::UnexpectedToken(
                     self.lexer.current_token.clone(),
@@ -300,7 +327,7 @@ impl<R: BufRead> Parser<R> {
             self.lexer.read()?;
             match self.lexer.read()?.kind {
                 token::Kind::Identifier(label) => {
-                    self.net[place].label = label;
+                    self.net[pl].label = Some(label);
                 }
                 _ => {
                     return Err(Box::new(ParserError::UnexpectedToken(
@@ -314,7 +341,7 @@ impl<R: BufRead> Parser<R> {
         // Parse marking
         if let token::Kind::Int(v) = self.lexer.peek()?.kind {
             self.lexer.read()?;
-            self.net[place].initial += v;
+            self.net[pl].initial += v;
         }
 
         if matches!(
@@ -327,9 +354,9 @@ impl<R: BufRead> Parser<R> {
                     token::Kind::Identifier(name) => name,
                     _ => break,
                 };
-                let transition = self.get_or_create_transition(identifier);
+                let tr = self.get_or_create_transition(identifier)?;
                 self.lexer.read()?;
-                let new_arc = self.parse_transition_output_arc(place, transition)?;
+                let new_arc = self.parse_transition_output_arc(pl, tr)?;
                 self.net.add_arc(new_arc)?;
             }
 
@@ -341,9 +368,9 @@ impl<R: BufRead> Parser<R> {
                     token::Kind::Identifier(name) => name,
                     _ => break,
                 };
-                let transition = self.get_or_create_transition(identifier);
+                let tr = self.get_or_create_transition(identifier)?;
                 self.lexer.read()?;
-                let new_arc = self.parse_transition_input_arc(place, transition)?;
+                let new_arc = self.parse_transition_input_arc(pl, tr)?;
                 self.net.add_arc(new_arc)?;
             }
         }
@@ -383,7 +410,7 @@ impl<R: BufRead> Parser<R> {
         let mut post = vec![];
         while let token::Kind::Identifier(id) = self.lexer.peek()?.kind {
             self.lexer.read()?;
-            pre.push(self.get_or_create_transition(&id));
+            pre.push(self.get_or_create_transition(&id)?);
         }
         let order = match self.lexer.read()?.kind {
             token::Kind::GreaterThan => false,
@@ -397,7 +424,7 @@ impl<R: BufRead> Parser<R> {
         };
         while let token::Kind::Identifier(id) = self.lexer.peek()?.kind {
             self.lexer.read()?;
-            post.push(self.get_or_create_transition(&id));
+            post.push(self.get_or_create_transition(&id)?);
         }
 
         let (pre, post) = if order { (post, pre) } else { (pre, post) };
