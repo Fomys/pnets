@@ -1,4 +1,3 @@
-use pnets::io::Parse;
 use pnets::standard::Net;
 use pnets_shrunk::modifications::{
     Agglomeration, InequalityReduction, Modification, Reduction, TransitionElimination,
@@ -20,8 +19,8 @@ fn simple_chain_agglomeration() {
         modifications[0],
         Modification::Agglomeration(Agglomeration {
             deleted_places: vec![
-                (net.search_place_by_name("p1").unwrap(), 1),
-                (net.search_place_by_name("p2").unwrap(), 1)
+                (net.get_index_by_name("p1").unwrap().as_place().unwrap(), 1),
+                (net.get_index_by_name("p2").unwrap().as_place().unwrap(), 1)
             ],
             new_place: net.places.last_idx().unwrap(),
             constant: 0,
@@ -41,7 +40,11 @@ fn parallel_transitions_fusion() {
     assert_eq!(
         modifications[0],
         Modification::TransitionElimination(TransitionElimination {
-            deleted_transitions: vec![net.search_transition_by_name("t1").unwrap()]
+            deleted_transitions: vec![net
+                .get_index_by_name("t1")
+                .unwrap()
+                .as_transition()
+                .unwrap()]
         })
     );
 }
@@ -56,8 +59,8 @@ fn parallel_places_fusion() {
     assert_eq!(
         modifications[0],
         Modification::Reduction(Reduction {
-            deleted_places: vec![(net.search_place_by_name("p1").unwrap(), 1)],
-            equals_to: vec![(net.search_place_by_name("p2").unwrap(), 1)],
+            deleted_places: vec![(net.get_index_by_name("p1").unwrap().as_place().unwrap(), 1)],
+            equals_to: vec![(net.get_index_by_name("p2").unwrap().as_place().unwrap(), 1)],
             constant: 0,
         })
     );
@@ -69,12 +72,14 @@ fn constant_places_elimination() {
         pnets_tina::Parser::new(include_str!("constant_places_elimination.net").as_bytes());
 
     let mut net = Net::from(parser.parse().unwrap());
+    println!("{:?}", net);
     let mut modifications = vec![];
     IdentityPlaceReducer::reduce(&mut net, &mut modifications);
+    println!("{:?}", net);
     assert_eq!(
         modifications[0],
         Modification::Reduction(Reduction {
-            deleted_places: vec![(net.search_place_by_name("p1").unwrap(), 1)],
+            deleted_places: vec![(net.get_index_by_name("p1").unwrap().as_place().unwrap(), 1)],
             equals_to: vec![],
             constant: 5,
         })
@@ -91,7 +96,7 @@ fn r7_convert() {
     assert_eq!(
         modifications[0],
         Modification::InequalityReduction(InequalityReduction {
-            deleted_places: vec![(net.search_place_by_name("p1").unwrap(), 1)],
+            deleted_places: vec![(net.get_index_by_name("p1").unwrap().as_place().unwrap(), 1)],
             kept_places: vec![],
             constant: 5,
         })
@@ -110,7 +115,7 @@ fn self_loop_place_elimination() {
     assert_eq!(
         modifications[0],
         Modification::Reduction(Reduction {
-            deleted_places: vec![(net.search_place_by_name("p1").unwrap(), 1)],
+            deleted_places: vec![(net.get_index_by_name("p1").unwrap().as_place().unwrap(), 1)],
             equals_to: vec![],
             constant: 5,
         })
@@ -129,7 +134,11 @@ fn self_loop_transition_elimination() {
     assert_eq!(
         modifications[0],
         Modification::TransitionElimination(TransitionElimination {
-            deleted_transitions: vec![net.search_transition_by_name("t1").unwrap()]
+            deleted_transitions: vec![net
+                .get_index_by_name("t1")
+                .unwrap()
+                .as_transition()
+                .unwrap()]
         })
     );
 }

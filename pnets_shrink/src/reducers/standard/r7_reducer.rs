@@ -1,10 +1,9 @@
 use pnets::standard::Net;
 use pnets::PlaceId;
 
-use crate::modifications::{Agglomeration, InequalityReduction, Modification};
+use crate::modifications::{InequalityReduction, Modification};
 use crate::reducers::reduce::{ConservativeReduce, PlaceReduce};
 use crate::reducers::Reduce;
-use std::ops::Rem;
 
 /// Removes the pattern "pl -> tr" from the network (pl and tr don't has other connection)
 pub struct R7Reducer;
@@ -23,7 +22,7 @@ impl PlaceReduce<Net> for R7Reducer {
     fn place_reduce(net: &mut Net, pl: PlaceId, modifications: &mut Vec<Modification>) {
         // We check that the place is connected to only one transition
         if !net[pl].deleted && net[pl].produced_by.is_empty() && net[pl].consumed_by.len() == 1 {
-            let &(tr, w) = net[pl].consumed_by.iter().next().unwrap();
+            let &(tr, _) = net[pl].consumed_by.iter().next().unwrap();
             if net[tr].produce.is_empty() {
                 net.delete_place(pl);
                 modifications.push(Modification::InequalityReduction(InequalityReduction {

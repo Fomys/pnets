@@ -38,7 +38,8 @@ impl PlaceReduce<Net> for ParallelPlaceReducer {
                 .map(|(pl, _)| *pl)
                 .filter(|&pl_2| {
                     // Search places which are equals to pl_1
-                    net[pl_1].consumed_by.len() == net[pl_2].consumed_by.len()
+                    pl_1 != pl_2
+                        && net[pl_1].consumed_by.len() == net[pl_2].consumed_by.len()
                         && net[pl_1].produced_by.len() == net[pl_2].produced_by.len()
                         && net[pl_1]
                             .produced_by

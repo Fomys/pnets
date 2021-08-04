@@ -7,8 +7,8 @@ use std::time::SystemTime;
 use clap::{App, Arg, ArgMatches};
 use log::info;
 
-use pnets::io::{Export, Parse};
 use pnets::standard::Net;
+use pnets::NodeId;
 use pnets_shrunk::modifications::Modification;
 use pnets_shrunk::reducers::standard::{
     IdentityPlaceReducer, IdentityTransitionReducer, ParallelSmartReducer, PseudoStart, R7Reducer,
@@ -102,8 +102,6 @@ fn main() -> Result<(), Box<dyn Error>> {
         now.elapsed()?,
         modifications.len()
     );
-    net.auto_name();
-
     write_output(&net, &modifications, &matches)?;
     Ok(())
 }
@@ -126,15 +124,15 @@ fn write_output(
                 .with_all_places(!matches.is_present("CLEAN"))
                 .with_disconnected_transitions(matches.is_present("CLEAN"))
                 .build()
-                .export(net)?;
+                .export(&net.into())?;
             if matches.is_present("RENUMBER") {
-                let mut net = Net::from(match matches.value_of("INPUT") {
+                let net = match matches.value_of("INPUT") {
                     Some("-") | None => {
                         pnets_tina::Parser::new(BufReader::new(io::stdin())).parse()?
                     }
                     Some(f) => pnets_tina::Parser::new(BufReader::new(File::open(f)?)).parse()?,
-                });
-                net.auto_name();
+                };
+
                 ExporterBuilder::new(File::create(f.to_owned() + ".orig.net")?)
                     .with_all_places(!matches.is_present("CLEAN"))
                     .with_disconnected_transitions(matches.is_present("CLEAN"))
@@ -150,7 +148,7 @@ fn write_output(
                 .with_all_places(!matches.is_present("CLEAN"))
                 .with_disconnected_transitions(matches.is_present("CLEAN"))
                 .build()
-                .export(net)?
+                .export(&net.into())?
         }
     }
     info!("Writing done: {:?}.", now.elapsed()?);
@@ -166,10 +164,23 @@ fn write_modifications<Writer: Write>(
         match modification {
             Modification::Agglomeration(agg) => {
                 writer.write_all(
-                    format!("# A |- {}*{} = ", agg.factor, net[agg.new_place].name).as_ref(),
+                    format!(
+                        "# A |- {}*{} = ",
+                        agg.factor,
+                        net.get_name_by_index(&NodeId::Place(agg.new_place))
+                            .unwrap()
+                    )
+                    .as_ref(),
                 )?;
                 for &(pl, w) in &agg.deleted_places {
-                    writer.write_all(format!("{}*{} + ", w, net[pl].name).as_ref())?;
+                    writer.write_all(
+                        format!(
+                            "{}*{} + ",
+                            w,
+                            net.get_name_by_index(&NodeId::Place(pl)).unwrap()
+                        )
+                        .as_ref(),
+                    )?;
                 }
                 writer.write_all(format!("{}\n", agg.constant).as_ref())?;
             }
@@ -178,7 +189,14 @@ fn write_modifications<Writer: Write>(
                 writer.write_all(format!("{}", red.constant).as_ref())?;
                 for (pl, w) in &red.equals_to {
                     writer.write_all(b" + ")?;
-                    writer.write_all(format!("{}*{}", w, net[*pl].name).as_ref())?;
+                    writer.write_all(
+                        format!(
+                            "{}*{}",
+                            w,
+                            net.get_name_by_index(&NodeId::Place(*pl)).unwrap()
+                        )
+                        .as_ref(),
+                    )?;
                 }
                 writer.write_all(b" = ")?;
                 let mut first = true;
@@ -188,7 +206,14 @@ fn write_modifications<Writer: Write>(
                     } else {
                         writer.write_all(b" + ")?;
                     }
-                    writer.write_all(format!("{}*{}", w, net[*pl].name).as_ref())?;
+                    writer.write_all(
+                        format!(
+                            "{}*{}",
+                            w,
+                            net.get_name_by_index(&NodeId::Place(*pl)).unwrap()
+                        )
+                        .as_ref(),
+                    )?;
                 }
                 writer.write_all(b"\n")?;
             }
@@ -202,11 +227,25 @@ fn write_modifications<Writer: Write>(
                     } else {
                         writer.write_all(b" + ")?;
                     }
-                    writer.write_all(format!("{}*{}", w, net[*pl].name).as_ref())?;
+                    writer.write_all(
+                        format!(
+                            "{}*{}",
+                            w,
+                            net.get_name_by_index(&NodeId::Place(*pl)).unwrap()
+                        )
+                        .as_ref(),
+                    )?;
                 }
                 writer.write_all(b" <= ")?;
                 for (pl, w) in &ine.kept_places {
-                    writer.write_all(format!("{}*{} + ", w, net[*pl].name).as_ref())?;
+                    writer.write_all(
+                        format!(
+                            "{}*{} + ",
+                            w,
+                            net.get_name_by_index(&NodeId::Place(*pl)).unwrap()
+                        )
+                        .as_ref(),
+                    )?;
                 }
                 writer.write_all(format!("{}\n", ine.constant).as_ref())?;
             }

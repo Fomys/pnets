@@ -38,7 +38,8 @@ impl TransitionReduce<Net> for ParallelTransitionReducer {
                 .map(|(tr, _)| *tr)
                 .filter(|&tr_2| {
                     // Search places which are equals to pl_1
-                    net[tr_1].consume.len() == net[tr_2].consume.len()
+                    tr_1 != tr_2
+                        && net[tr_1].consume.len() == net[tr_2].consume.len()
                         && net[tr_1].produce.len() == net[tr_2].produce.len()
                         && net[tr_1]
                             .produce
