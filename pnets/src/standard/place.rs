@@ -5,10 +5,8 @@ use crate::{arc, Marking, PlaceId, TransitionId};
 pub struct Place {
     /// Identifier of the place
     pub(crate) id: PlaceId,
-    /// Name of the place
-    pub name: String,
     /// Label of the place
-    pub label: String,
+    pub label: Option<String>,
     /// Initial value of the place
     pub initial: usize,
 

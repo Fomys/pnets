@@ -1,10 +1,11 @@
-use std::error::Error;
 use std::ops::{Index, IndexMut};
 
 use indexed_vec::IndexVec;
 
+use crate::net::NodeId;
 use crate::standard::{Place, Transition};
 use crate::{arc, timed, NetError, PlaceId, TransitionId};
+use bimap::BiMap;
 
 /// Standard Petri net, with only produce and consume arcs
 ///
@@ -18,6 +19,10 @@ use crate::{arc, timed, NetError, PlaceId, TransitionId};
 pub struct Net {
     /// Name of this network
     pub name: String,
+    /// BiHashmap to get id from index and index from id
+    id_index_map: BiMap<String, NodeId>,
+    /// Automatic prefix for new places and transitions
+    automatic_prefix: String,
     /// Transitions of the network
     pub transitions: IndexVec<TransitionId, Transition>,
     /// Places of the network
@@ -56,22 +61,24 @@ impl From<timed::Net> for Net {
     fn from(timed: timed::Net) -> Self {
         // Crate a new network
         let mut net = Net {
-            name: timed.name,
+            name: timed.name.clone(),
             ..Net::default()
         };
         // Copy all places
-        for place in timed.places {
-            let i = net.create_place();
-            net[i].name = place.name;
-            net[i].initial = place.initial;
-            net[i].label = place.label;
+        for (pl, place) in timed.places.iter_enumerated() {
+            let new_pl = net.create_place();
+            net[new_pl].initial = place.initial.clone();
+            net[new_pl].label = place.label.clone();
+            net.rename_node(new_pl.into(), &timed.get_name_by_index(&pl.into()).unwrap())
+                .unwrap();
         }
 
         // Copy transitions and arcs from timed Petri net
-        for transition in timed.transitions {
+        for (tr, transition) in timed.transitions.iter_enumerated() {
             let new_tr = net.create_transition();
-            net[new_tr].name = transition.name;
-            net[new_tr].label = transition.label;
+            net[new_tr].label = transition.label.clone();
+            net.rename_node(new_tr.into(), &timed.get_name_by_index(&tr.into()).unwrap())
+                .unwrap();
             for &(pl, weight) in transition.consume.iter() {
                 net.add_arc(arc::Kind::Consume(pl, net[new_tr].id, weight as usize))
                     .unwrap();
@@ -88,6 +95,7 @@ impl From<timed::Net> for Net {
                     .unwrap();
             }
         }
+
         net
     }
 }
@@ -99,6 +107,10 @@ impl Net {
             id: PlaceId::from(self.places.len()),
             ..Place::default()
         });
+        self.id_index_map.insert(
+            format!("{}-{}", self.automatic_prefix, self.id_index_map.len()),
+            NodeId::Place(self.places.last_idx().unwrap()),
+        );
         self.places.last_idx().unwrap()
     }
 
@@ -108,23 +120,36 @@ impl Net {
             id: TransitionId::from(self.transitions.len()),
             ..Transition::default()
         });
+        self.id_index_map.insert(
+            format!("{}-{}", self.automatic_prefix, self.id_index_map.len()),
+            NodeId::Transition(self.transitions.last_idx().unwrap()),
+        );
         self.transitions.last_idx().unwrap()
     }
 
-    /// Search a place by its name
-    pub fn search_place_by_name(&self, name: &str) -> Option<PlaceId> {
-        self.places
-            .iter()
-            .position(|v| v.name == name)
-            .map(PlaceId::from)
+    /// Get node name with its id
+    pub fn get_name_by_index(&self, index: &NodeId) -> Option<String> {
+        self.id_index_map.get_by_right(index).map(|v| v.clone())
     }
 
-    /// Search a transition by its name
-    pub fn search_transition_by_name(&self, name: &str) -> Option<TransitionId> {
-        self.transitions
-            .iter()
-            .position(|v| v.name == name)
-            .map(TransitionId::from)
+    /// Get node id with its name
+    pub fn get_index_by_name(&self, name: &str) -> Option<NodeId> {
+        self.id_index_map.get_by_left(name).map(|v| *v)
+    }
+
+    /// Rename node
+    pub fn rename_node(&mut self, id: NodeId, name: &str) -> Result<(), NetError> {
+        if name.starts_with(&self.automatic_prefix) {
+            self.automatic_prefix.push('a');
+        }
+        match self.id_index_map.get_by_left(name) {
+            None => {
+                self.id_index_map.remove_by_right(&id);
+                self.id_index_map.insert(name.to_string(), id);
+                Ok(())
+            }
+            Some(_) => Err(NetError::DuplicatedName(name.to_string())),
+        }
     }
 
     /// Add an arc in the network. This kind of network support only [`arc::Kind::Consume`] and
@@ -132,7 +157,7 @@ impl Net {
     ///
     /// # Errors
     /// Return [`NetError::UnsupportedArc`] when trying to add a kind of arc which is not supported
-    pub fn add_arc(&mut self, arc: arc::Kind) -> Result<(), Box<dyn Error>> {
+    pub fn add_arc(&mut self, arc: arc::Kind) -> Result<(), NetError> {
         match arc {
             arc::Kind::Consume(pl_id, tr_id, w) => {
                 self.transitions[tr_id].consume.insert_or_add(pl_id, w);
@@ -144,7 +169,7 @@ impl Net {
                 self.places[pl_id].produced_by.insert_or_add(tr_id, w);
                 Ok(())
             }
-            a => Err(Box::new(NetError::UnsupportedArc(a))),
+            a => Err(NetError::UnsupportedArc(a)),
         }
     }
 
@@ -204,25 +229,6 @@ impl Net {
         new_pl
     }
 
-    /// Rename all places and transition with the name `pl_{idx}`
-    ///
-    /// If the place or the transition doesn't have a label, the old name is copied to label.
-    pub fn auto_name(&mut self) {
-        for (pl, place) in self.places.iter_mut().enumerate() {
-            if place.label.is_empty() {
-                place.label = place.name.clone()
-            }
-            place.name = format!("pl_{}", pl);
-        }
-
-        for (tr, transition) in self.transitions.iter_mut().enumerate() {
-            if transition.label.is_empty() {
-                transition.label = transition.name.clone()
-            }
-            transition.name = format!("tr_{}", tr);
-        }
-    }
-
     /// Create a new network without all disconected nodes and without labels to avoid extra memory
     /// consumption.
     ///
@@ -245,7 +251,6 @@ impl Net {
             if !old_place.deleted && !old_place.is_disconnected() {
                 let pl = new.create_place();
                 new.places[pl].initial = old_place.initial;
-                new.places[pl].name = format!("pl_{:0}", place_map.len());
                 place_map.push(old_pl);
             }
         }
@@ -253,22 +258,13 @@ impl Net {
         for (old_tr, old_transition) in self.transitions.iter_enumerated() {
             if !old_transition.is_disconnected() {
                 let tr = new.create_transition();
-                new.transitions[tr].name = format!("tr_{:0}", transition_map.len());
                 for &(pl, w) in old_transition.produce.iter() {
-                    new.add_arc(arc::Kind::Produce(
-                        place_map_inv[pl],
-                        TransitionId::from(transition_map.len()),
-                        w as usize,
-                    ))
-                    .unwrap();
+                    new.add_arc(arc::Kind::Produce(place_map_inv[pl], tr, w as usize))
+                        .unwrap();
                 }
                 for &(pl, w) in old_transition.consume.iter() {
-                    new.add_arc(arc::Kind::Consume(
-                        place_map_inv[pl],
-                        TransitionId::from(transition_map.len()),
-                        w as usize,
-                    ))
-                    .unwrap();
+                    new.add_arc(arc::Kind::Consume(place_map_inv[pl], tr, w as usize))
+                        .unwrap();
                 }
                 transition_map.push(old_tr);
             }

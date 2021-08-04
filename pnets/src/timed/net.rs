@@ -3,8 +3,10 @@ use std::ops::{Index, IndexMut};
 
 use indexed_vec::IndexVec;
 
+use crate::net::NodeId;
 use crate::timed::{Place, Transition};
 use crate::{arc, standard, NetError, PlaceId, TransitionId};
+use bimap::BiMap;
 
 /// Timed Petri net, with produce, consume, condition and inhibitors arcs
 ///
@@ -17,6 +19,10 @@ use crate::{arc, standard, NetError, PlaceId, TransitionId};
 pub struct Net {
     /// Name of this network
     pub name: String,
+    /// BiHashmap to get id from index and index from id
+    id_index_map: BiMap<String, NodeId>,
+    /// Prefix for new places and transitions
+    automatic_prefix: String,
     /// Transitions of the network
     pub transitions: IndexVec<TransitionId, Transition>,
     /// Places of the network
@@ -51,27 +57,25 @@ impl IndexMut<PlaceId> for Net {
     }
 }
 
-impl From<standard::Net> for Net {
-    fn from(standard: standard::Net) -> Self {
+impl From<&standard::Net> for Net {
+    fn from(standard: &standard::Net) -> Self {
         // Crate a new network
         let mut net = Net {
-            name: standard.name,
+            name: standard.name.clone(),
             ..Net::default()
         };
 
         // Copy all places
-        for place in standard.places {
+        for place in &standard.places {
             let new_pl = net.create_place();
-            net[new_pl].name = place.name;
             net[new_pl].initial = place.initial;
-            net[new_pl].label = place.label;
+            net[new_pl].label = place.label.clone();
         }
 
         // Copy transitions and arcs from timed Petri nets
-        for transition in standard.transitions {
+        for transition in &standard.transitions {
             let new_tr = net.create_transition();
-            net[new_tr].name = transition.name;
-            net[new_tr].label = transition.label;
+            net[new_tr].label = transition.label.clone();
             for &(pl, weight) in transition.consume.iter() {
                 net.add_arc(arc::Kind::Consume(pl, net[new_tr].id, weight as usize))
                     .unwrap();
@@ -86,12 +90,16 @@ impl From<standard::Net> for Net {
 }
 
 impl Net {
-    /// Create a place with an empty name
+    /// Create a place with automatic name
     pub fn create_place(&mut self) -> PlaceId {
         self.places.push(Place {
             id: PlaceId::from(self.transitions.len()),
             ..Place::default()
         });
+        self.id_index_map.insert(
+            format!("{}-{}", self.automatic_prefix, self.id_index_map.len()),
+            NodeId::Place(self.places.last_idx().unwrap()),
+        );
         self.places.last_idx().unwrap()
     }
 
@@ -101,23 +109,36 @@ impl Net {
             id: TransitionId::from(self.transitions.len()),
             ..Transition::default()
         });
+        self.id_index_map.insert(
+            format!("{}-{}", self.automatic_prefix, self.id_index_map.len()),
+            NodeId::Transition(self.transitions.last_idx().unwrap()),
+        );
         self.transitions.last_idx().unwrap()
     }
 
-    /// Search a place by its name
-    pub fn search_place_by_name(&self, name: &str) -> Option<PlaceId> {
-        self.places
-            .iter()
-            .position(|v| v.name == name)
-            .map(PlaceId::from)
+    /// Get node name with its id
+    pub fn get_name_by_index(&self, index: &NodeId) -> Option<String> {
+        self.id_index_map.get_by_right(index).map(|v| v.clone())
     }
 
-    /// Search a transition by its name
-    pub fn search_transition_by_name(&self, name: &str) -> Option<TransitionId> {
-        self.transitions
-            .iter()
-            .position(|v| v.name == name)
-            .map(TransitionId::from)
+    /// Get node id with its name
+    pub fn get_index_by_name(&self, name: &str) -> Option<NodeId> {
+        self.id_index_map.get_by_left(name).map(|v| *v)
+    }
+
+    /// Rename node
+    pub fn rename_node(&mut self, id: NodeId, name: &str) -> Result<(), NetError> {
+        if name.starts_with(&self.automatic_prefix) {
+            self.automatic_prefix.push('a');
+        }
+        match self.id_index_map.get_by_left(name) {
+            None => {
+                self.id_index_map.remove_by_right(&id);
+                self.id_index_map.insert(name.to_string(), id);
+                Ok(())
+            }
+            Some(_) => Err(NetError::DuplicatedName(name.to_string())),
+        }
     }
 
     /// Add an arc in the network. This kind of network support only [`arc::Kind::Consume`],

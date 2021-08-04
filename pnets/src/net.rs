@@ -54,3 +54,42 @@ impl ::std::convert::From<usize> for TransitionId {
         TransitionId(v)
     }
 }
+
+/// Represent an id in the network
+#[derive(Eq, PartialEq, Hash, Debug, Clone, Copy)]
+pub enum NodeId {
+    /// Place
+    Place(PlaceId),
+    /// Transition
+    Transition(TransitionId),
+}
+
+impl From<TransitionId> for NodeId {
+    fn from(tr: TransitionId) -> Self {
+        Self::Transition(tr)
+    }
+}
+
+impl From<PlaceId> for NodeId {
+    fn from(pl: PlaceId) -> Self {
+        Self::Place(pl)
+    }
+}
+
+impl NodeId {
+    /// Try to convert NodeId to PlaceId
+    pub fn as_place(&self) -> Option<PlaceId> {
+        match self {
+            NodeId::Place(pl) => Some(*pl),
+            NodeId::Transition(_) => None,
+        }
+    }
+
+    /// Try to convert NodeId to TransitionId
+    pub fn as_transition(&self) -> Option<TransitionId> {
+        match self {
+            NodeId::Place(_) => None,
+            NodeId::Transition(tr) => Some(*tr),
+        }
+    }
+}

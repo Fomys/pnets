@@ -16,11 +16,10 @@
 //!
 pub use errors::NetError;
 pub use marking::Marking;
-pub use net::{PlaceId, TransitionId};
+pub use net::{NodeId, PlaceId, TransitionId};
 
 pub mod arc;
 mod errors;
-pub mod io;
 mod marking;
 mod net;
 pub mod standard;

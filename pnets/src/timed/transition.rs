@@ -5,10 +5,8 @@ use crate::{Marking, PlaceId, TransitionId};
 #[derive(Debug, Default)]
 pub struct Transition {
     pub(crate) id: TransitionId,
-    /// Name of the transition
-    pub name: String,
     /// Label of the transition
-    pub label: String,
+    pub label: Option<String>,
     /// Timerange of the transition
     pub time: TimeRange,
 

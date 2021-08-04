@@ -1,12 +1,16 @@
 use pnets::timed::Net;
+use pnets::NodeId;
 
 #[test]
 fn create_place() {
     let mut net = Net::default();
     let i = net.create_place();
     assert_eq!(net.places.len(), 1);
-    assert_eq!(net[i].name, "".to_string());
-    assert_eq!(net[i].label, "".to_string());
+    assert_eq!(
+        net.get_name_by_index(&NodeId::Place(i)).unwrap(),
+        "-0".to_string()
+    );
+    assert_eq!(net[i].label, None);
 }
 
 #[test]

@@ -17,3 +17,4 @@ include = ["src/**/*.rs", "README.md", "LICENSE-APACHE", "LICENSE-MIT"]
 custom_derive = "0.1"
 newtype_derive = "0.1"
 indexed_vec = "1.2"
+bimap = "0.6"

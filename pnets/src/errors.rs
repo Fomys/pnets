@@ -17,6 +17,12 @@ pub enum NetError {
     InvalidTransition(TransitionId),
     /// This place id is invalid
     InvalidPlace(PlaceId),
+    /// There is a duplicated name in the network
+    DuplicatedName(String),
+    /// This identifier is not found in the network
+    UnknownIdentifier(String),
+    /// This network contains an invalid arc (place to place, transition to transition, ...)
+    InvalidArc,
 }
 
 impl fmt::Display for NetError {
@@ -29,6 +35,17 @@ impl fmt::Display for NetError {
             }
             NetError::InvalidTransition(tr) => write!(f, "Invalid transition id {}", tr),
             NetError::InvalidPlace(pl) => write!(f, "Invalid place id {}", pl),
+            NetError::DuplicatedName(name) => write!(
+                f,
+                "You try to create duplicated name in the network: {}",
+                name
+            ),
+            NetError::UnknownIdentifier(identifier) => {
+                write!(f, "Identifier {} not found in the network.", identifier)
+            }
+            NetError::InvalidArc => {
+                write!(f, "Invalid arc in the network")
+            }
         }
     }
 }

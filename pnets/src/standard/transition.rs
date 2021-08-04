@@ -5,10 +5,8 @@ use crate::{arc, Marking, PlaceId, TransitionId};
 pub struct Transition {
     /// Identifier of the transition
     pub(crate) id: TransitionId,
-    /// Name of the transition
-    pub name: String,
     /// Label of the transition
-    pub label: String,
+    pub label: Option<String>,
 
     /// Consumption of the transition
     pub consume: Marking<PlaceId>,
