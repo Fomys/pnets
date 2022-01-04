@@ -41,10 +41,10 @@ where
         while let Some(modification) = modifications_queue.pop_front() {
             match modification {
                 Modification::Agglomeration(agg) => {
-                    let mut modifications = vec![];
-                    PostPlace::place_reduce(net, agg.new_place, &mut modifications);
+                    let mut new_modifications = vec![];
+                    PostPlace::place_reduce(net, agg.new_place, &mut new_modifications);
                     modifications.push(Modification::Agglomeration(agg));
-                    modifications_queue.extend(modifications);
+                    modifications_queue.extend(new_modifications);
                 }
                 other => modifications.push(other),
             }

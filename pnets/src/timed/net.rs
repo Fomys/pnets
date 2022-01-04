@@ -70,6 +70,13 @@ impl From<&standard::Net> for Net {
             let new_pl = net.create_place();
             net[new_pl].initial = place.initial;
             net[new_pl].label = place.label.clone();
+            net.rename_node(
+                NodeId::Place(place.id),
+                &standard
+                    .get_name_by_index(&NodeId::Place(place.id))
+                    .unwrap(),
+            )
+            .unwrap();
         }
 
         // Copy transitions and arcs from timed Petri nets
@@ -84,6 +91,13 @@ impl From<&standard::Net> for Net {
                 net.add_arc(arc::Kind::Produce(pl, net[new_tr].id, weight as usize))
                     .unwrap();
             }
+            net.rename_node(
+                NodeId::Transition(transition.id),
+                &standard
+                    .get_name_by_index(&NodeId::Transition(transition.id))
+                    .unwrap(),
+            )
+            .unwrap();
         }
         net
     }

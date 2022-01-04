@@ -1,6 +1,6 @@
-# PNETS TPN_
+# PNETS shrunk
 
-**PNETS reduce is a library which reduce Petri nets according while
+**PNETS shrunk is a library which reduce Petri nets according while
 keeping some properties on the network**
 
 - [crates.io](https://crates.io/crates/pnets_shrunk)

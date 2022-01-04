@@ -157,18 +157,14 @@ where
                     1 => self.writer.write_all(
                         format!(
                             "{} ",
-                            Self::escape(&Self::escape(
-                                &net.get_name_by_index(&NodeId::Place(pl)).unwrap()
-                            ),)
+                            Self::escape(&net.get_name_by_index(&NodeId::Place(pl)).unwrap())
                         )
                         .as_ref(),
                     )?,
                     w => self.writer.write_all(
                         format!(
                             "{}*{} ",
-                            Self::escape(&Self::escape(
-                                &net.get_name_by_index(&NodeId::Place(pl)).unwrap()
-                            ),),
+                            Self::escape(&net.get_name_by_index(&NodeId::Place(pl)).unwrap()),
                             w
                         )
                         .as_ref(),

@@ -26,10 +26,13 @@ impl TransitionReduce<Net> for SimpleChainReducer {
     fn transition_reduce(net: &mut Net, tr: TransitionId, modifications: &mut Vec<Modification>) {
         // We search simple chain agglomeration by searching the middle transition, which has only
         // one consumption and one production.
-        if net[tr].produce.len() == 1 && net[tr].consume.len() == 1 {
+        if !net[tr].deleted && net[tr].produce.len() == 1 && net[tr].consume.len() == 1 {
             let pl_dest = net[tr].produce.iter().next().unwrap().0;
             // Check if the output transition has only one producer and an empty initial marking
-            if net[pl_dest].produced_by.len() == 1 && net[pl_dest].initial == 0 {
+            if !net[pl_dest].deleted
+                && net[pl_dest].produced_by.len() == 1
+                && net[pl_dest].initial == 0
+            {
                 let pl_source = net[tr].consume.iter().next().unwrap().0;
                 let new_pl = net.create_place();
 

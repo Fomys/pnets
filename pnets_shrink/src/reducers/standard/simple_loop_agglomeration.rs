@@ -9,7 +9,6 @@ use crate::reducers::Reduce;
 
 #[derive(Clone)]
 struct SimpleLoopAgglomerationGraphNode {
-    connected: Vec<(TransitionId, PlaceId)>,
     num: Option<usize>,
     accessible_num: Option<usize>,
     in_stack: bool,
@@ -35,7 +34,7 @@ impl Partition {
 }
 
 /// Implementation of the Tarjan algorithm on petri network
-/// 
+///
 /// We apply this algorithm on the graph formed by all transition which has only one consumption and
 /// one production (those transitions correspond to those found in the SLA reduction)
 struct SimpleLoopAgglomerationGraph {
@@ -49,7 +48,6 @@ impl SimpleLoopAgglomerationGraph {
     pub fn new(node_count: usize) -> Self {
         let nodes: IndexVec<TransitionId, SimpleLoopAgglomerationGraphNode> = IndexVec::from_elem_n(
             SimpleLoopAgglomerationGraphNode {
-                connected: vec![],
                 num: None,
                 accessible_num: None,
                 in_stack: false,

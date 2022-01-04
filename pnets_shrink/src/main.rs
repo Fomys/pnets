@@ -1,3 +1,4 @@
+use std::convert::TryInto;
 use std::error::Error;
 use std::fs::File;
 use std::io;
@@ -9,6 +10,7 @@ use log::info;
 
 use pnets::standard::Net;
 use pnets::NodeId;
+use pnets_pnml::ptnet::Ptnet;
 use pnets_shrunk::modifications::Modification;
 use pnets_shrunk::reducers::standard::{
     IdentityPlaceReducer, IdentityTransitionReducer, ParallelSmartReducer, PseudoStart, R7Reducer,
@@ -55,10 +57,13 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     info!("Start parsing.");
     let now = SystemTime::now();
-    let mut net = Net::from(match matches.value_of("INPUT") {
-        Some("-") | None => pnets_tina::Parser::new(BufReader::new(io::stdin())).parse()?,
-        Some(f) => pnets_tina::Parser::new(BufReader::new(File::open(f)?)).parse()?,
-    });
+
+    let ptnet: Ptnet = quick_xml::de::from_reader(BufReader::new(File::open(
+        matches.value_of("INPUT").unwrap(),
+    )?))?;
+    let mut nets: Vec<Net> = (&ptnet).try_into()?;
+    let mut net = &mut nets[0];
+
     info!("Parsing done: {:?}", now.elapsed()?);
     info!("Start reduction.");
     let mut modifications = vec![];
