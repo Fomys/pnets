@@ -62,3 +62,51 @@ fn test_insert_or_max() {
     assert_eq!(marking[4], 4);
     assert_eq!(marking[5], 5);
 }
+
+#[test]
+fn test_dual_iterator_rand() {
+    let mut marking_1: Marking<usize> = Default::default();
+    let mut marking_2: Marking<usize> = Default::default();
+    for _ in 0..fastrand::usize(0..1000) {
+        marking_1.insert_or_max(
+            fastrand::usize(0..usize::MAX),
+            fastrand::usize(0..usize::MAX),
+        );
+    }
+    for _ in 0..fastrand::usize(0..1000) {
+        marking_2.insert_or_max(
+            fastrand::usize(0..usize::MAX),
+            fastrand::usize(0..usize::MAX),
+        );
+    }
+    for (idx, v1, v2) in marking_1.iter_with(&marking_2) {
+        assert_eq!(v1, marking_1[idx]);
+        assert_eq!(v2, marking_2[idx]);
+    }
+}
+
+#[test]
+fn test_dual_iterator_left() {
+    let mut marking_1: Marking<usize> = Default::default();
+    let marking_2: Marking<usize> = Default::default();
+    marking_1.insert_or_max(0, 1);
+    marking_1.insert_or_max(1, 1);
+    marking_1.insert_or_max(2, 1);
+    for (idx, v1, v2) in marking_1.iter_with(&marking_2) {
+        assert_eq!(v1, marking_1[idx]);
+        assert_eq!(v2, marking_2[idx]);
+    }
+}
+
+#[test]
+fn test_dual_iterator_right() {
+    let marking_1: Marking<usize> = Default::default();
+    let mut marking_2: Marking<usize> = Default::default();
+    marking_2.insert_or_max(0, 1);
+    marking_2.insert_or_max(1, 1);
+    marking_2.insert_or_max(2, 1);
+    for (idx, v1, v2) in marking_1.iter_with(&marking_2) {
+        assert_eq!(v1, marking_1[idx]);
+        assert_eq!(v2, marking_2[idx]);
+    }
+}

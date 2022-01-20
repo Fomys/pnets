@@ -107,11 +107,11 @@ impl Net {
     /// Create a place with automatic name
     pub fn create_place(&mut self) -> PlaceId {
         self.places.push(Place {
-            id: PlaceId::from(self.transitions.len()),
+            id: PlaceId::from(self.places.len()),
             ..Place::default()
         });
         self.id_index_map.insert(
-            format!("{}-{}", self.automatic_prefix, self.id_index_map.len()),
+            format!("{}{}", self.automatic_prefix, self.id_index_map.len()),
             NodeId::Place(self.places.last_idx().unwrap()),
         );
         self.places.last_idx().unwrap()
@@ -124,7 +124,7 @@ impl Net {
             ..Transition::default()
         });
         self.id_index_map.insert(
-            format!("{}-{}", self.automatic_prefix, self.id_index_map.len()),
+            format!("{}{}", self.automatic_prefix, self.id_index_map.len()),
             NodeId::Transition(self.transitions.last_idx().unwrap()),
         );
         self.transitions.last_idx().unwrap()
@@ -151,6 +151,7 @@ impl Net {
                 self.id_index_map.insert(name.to_string(), id);
                 Ok(())
             }
+            Some(&nid) if nid == id => Ok(()),
             Some(_) => Err(NetError::DuplicatedName(name.to_string())),
         }
     }

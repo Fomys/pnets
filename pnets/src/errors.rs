@@ -5,7 +5,7 @@ use std::fmt::Formatter;
 use crate::{arc, PlaceId, TransitionId};
 
 /// Errors generated when manipulating a Petri net
-#[derive(Debug)]
+#[derive(Debug, Eq, PartialEq)]
 pub enum NetError {
     /// There is at least one cyclic priority (t1 > t0 > t1 for example)
     CyclicPriorities,

@@ -1,6 +1,6 @@
 [package]
 name = "pnets"
-version = "0.1.3"
+version = "0.1.4"
 authors = ["Louis Chauvet <louis.chauvet@free.fr>"]
 edition = "2018"
 description = "A framework for Petri net manipulation"
@@ -18,3 +18,7 @@ custom_derive = "0.1"
 newtype_derive = "0.1"
 indexed_vec = "1.2"
 bimap = "0.6"
+serde = "1.0"
+
+[dev-dependencies]
+fastrand = "1.6"

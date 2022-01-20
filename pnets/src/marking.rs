@@ -90,7 +90,7 @@ where
             // Right index is less than left index, so we increment right counter and return its value
             self.current_right += 1;
             Some((
-                self.left.values[self.current_right - 1].0,
+                self.right.values[self.current_right - 1].0,
                 0,
                 self.right.values[self.current_right - 1].1,
             ))

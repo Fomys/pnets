@@ -20,7 +20,7 @@ pub struct Net {
     /// Name of this network
     pub name: String,
     /// BiHashmap to get id from index and index from id
-    id_index_map: BiMap<String, NodeId>,
+    pub(crate) id_index_map: BiMap<String, NodeId>,
     /// Automatic prefix for new places and transitions
     automatic_prefix: String,
     /// Transitions of the network
@@ -108,7 +108,7 @@ impl Net {
             ..Place::default()
         });
         self.id_index_map.insert(
-            format!("{}-{}", self.automatic_prefix, self.id_index_map.len()),
+            format!("{}{}", self.automatic_prefix, self.id_index_map.len()),
             NodeId::Place(self.places.last_idx().unwrap()),
         );
         self.places.last_idx().unwrap()
@@ -121,7 +121,7 @@ impl Net {
             ..Transition::default()
         });
         self.id_index_map.insert(
-            format!("{}-{}", self.automatic_prefix, self.id_index_map.len()),
+            format!("{}{}", self.automatic_prefix, self.id_index_map.len()),
             NodeId::Transition(self.transitions.last_idx().unwrap()),
         );
         self.transitions.last_idx().unwrap()
@@ -245,7 +245,6 @@ impl Net {
         let mut transition_map = IndexVec::<TransitionId, TransitionId>::default();
         let mut place_map = IndexVec::<PlaceId, PlaceId>::default(); // map[new_pl] = old_pl
         let mut place_map_inv = IndexVec::<PlaceId, PlaceId>::default(); //map_inv[old_pl] = new_pl
-
         for (old_pl, old_place) in self.places.iter_enumerated() {
             place_map_inv.push(PlaceId::from(place_map.len()));
             if !old_place.deleted && !old_place.is_disconnected() {
