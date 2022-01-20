@@ -5,20 +5,17 @@ use pnets::timed::{Bound, TimeRange};
 use pnets::{timed, NetError, NodeId};
 
 /// Create a new tina exporter from parameters
-pub struct ExporterBuilder<W: Write> {
-    writer: W,
+pub struct ExporterBuilder<'w> {
+    writer: &'w mut dyn Write,
     without_disconnected_transitions: bool,
     with_all_places: bool,
 }
 
-impl<W> ExporterBuilder<W>
-where
-    W: Write,
-{
+impl<'w> ExporterBuilder<'w> {
     /// Create a new builder
     ///
     /// By default all disconnected transitions and places are exported
-    pub fn new(writer: W) -> Self {
+    pub fn new(writer: &'w mut dyn Write) -> Self {
         Self {
             writer,
             without_disconnected_transitions: false,
@@ -40,7 +37,7 @@ where
         }
     }
     /// Build the exporter
-    pub fn build(self) -> Exporter<W> {
+    pub fn build(self) -> Exporter<'w> {
         Exporter {
             writer: self.writer,
             without_disconnected_transition: self.without_disconnected_transitions,
@@ -53,19 +50,13 @@ where
 ///
 /// It consume a network ([`pnets::timed::Net`]) and it write its
 /// representation in the writer.
-pub struct Exporter<W>
-where
-    W: Write,
-{
-    writer: W,
+pub struct Exporter<'w> {
+    writer: &'w mut dyn Write,
     without_disconnected_transition: bool,
     with_all_places: bool,
 }
 
-impl<W> Exporter<W>
-where
-    W: Write,
-{
+impl<'w> Exporter<'w> {
     fn escape(s: &str) -> String {
         format!(
             "{{{}}}",

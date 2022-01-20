@@ -133,10 +133,9 @@ fn transition_test() {
 }
 
 #[test]
-#[should_panic]
 fn name_test_invalid_identifier() {
     let parser = pnets_tina::Parser::new("net *".as_bytes());
-    parser.parse().unwrap();
+    assert_eq!(parser.parse().is_ok(), false);
 }
 
 #[test]

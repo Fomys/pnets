@@ -5,7 +5,8 @@ use std::io::stdout;
 fn main() -> Result<(), Box<dyn Error>> {
     let parser = pnets_tina::Parser::new(include_str!("sokoban_3.net").as_bytes());
     let net = parser.parse().unwrap();
-    let mut writer = ExporterBuilder::new(stdout())
+    let mut out = Box::new(stdout());
+    let mut writer = ExporterBuilder::new(out.as_mut())
         .with_all_places(true)
         .with_disconnected_transitions(true)
         .build();

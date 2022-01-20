@@ -1,6 +1,6 @@
 [package]
 name = "pnets_tina"
-version = "0.1.1"
+version = "0.1.2"
 authors = ["Louis Chauvet <louis.chauvet@free.fr>"]
 edition = "2018"
 description = "A parser for tina Petri net"
