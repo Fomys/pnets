@@ -6,11 +6,13 @@ use crate::reducers::reduce::{ConservativeReduce, PlaceReduce};
 use crate::reducers::Reduce;
 
 /// Removes the pattern "pl -> tr" from the network (pl and tr don't has other connection)
-pub struct R7Reducer;
+///
+/// See definition 10, page 12 [STTT](https://doi.org/10.1007/s10009-019-00519-1)
+pub struct SourceSinkReducer;
 
-impl ConservativeReduce<Net> for R7Reducer {}
+impl ConservativeReduce<Net> for SourceSinkReducer {}
 
-impl Reduce<Net> for R7Reducer {
+impl Reduce<Net> for SourceSinkReducer {
     fn reduce(net: &mut Net, modifications: &mut Vec<Modification>) {
         for tr in (0..net.places.len()).map(|v| PlaceId::from(v)) {
             Self::place_reduce(net, tr, modifications);
@@ -18,7 +20,7 @@ impl Reduce<Net> for R7Reducer {
     }
 }
 
-impl PlaceReduce<Net> for R7Reducer {
+impl PlaceReduce<Net> for SourceSinkReducer {
     fn place_reduce(net: &mut Net, pl: PlaceId, modifications: &mut Vec<Modification>) {
         // We check that the place is connected to only one transition
         if !net[pl].deleted && net[pl].produced_by.is_empty() && net[pl].consumed_by.len() == 1 {

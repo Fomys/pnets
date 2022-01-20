@@ -18,6 +18,9 @@ pub type Chain5Reducer<Net, First, Second, Third, Fourth, Fifth> =
 /// Chain 6 reducers, see [`ChainReducer`]
 pub type Chain6Reducer<Net, First, Second, Third, Fourth, Fifth, Sixth> =
     Chain5Reducer<Net, First, Second, Third, Fourth, ChainReducer<Net, Fifth, Sixth>>;
+/// Chain 7 reducers, see [`ChainReducer`]
+pub type Chain7Reducer<Net, First, Second, Third, Fourth, Fifth, Sixth, Seventh> =
+    Chain6Reducer<Net, First, Second, Third, Fourth, Fifth, ChainReducer<Net, Sixth, Seventh>>;
 
 /// Apply the first reduction and then the second reduction
 ///

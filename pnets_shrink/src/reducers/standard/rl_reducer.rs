@@ -21,7 +21,7 @@ impl Reduce<Net> for RLReducer {
                 // Deux entrées, une sortie, poids de 1 partout
                 let transition = &net[tr];
                 if transition.consume.len() != 2 // 2 entrées
-                    || !transition.produce.is_empty() // 1 sortie
+                    || transition.produce.len() != 1 // 1 sortie
                     || transition.consume.iter().any(|(_, w)| *w != 1) // Entrée/sorties unitaires
                     || transition.produce.iter().any(|(_, w)| *w != 1)
                 {
@@ -44,7 +44,6 @@ impl Reduce<Net> for RLReducer {
                     Some(place) => place,
                 }
             };
-
             let mut constraint_places = vec![];
             // Recherche des places contraintes
             // - Itération sur toutes les transitions de sortie de la produce_place

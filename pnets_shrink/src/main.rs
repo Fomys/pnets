@@ -1,105 +1,356 @@
+use clap::Parser;
+use log::info;
 use std::convert::TryInto;
 use std::error::Error;
 use std::fs::File;
-use std::io;
-use std::io::{stdout, BufReader, Write};
+use std::io::{stdin, stdout, BufRead, BufReader, Write};
 use std::time::SystemTime;
-
-use clap::{App, Arg, ArgMatches};
-use log::info;
 
 use pnets::standard::Net;
 use pnets::NodeId;
 use pnets_pnml::ptnet::Ptnet;
-use pnets_shrunk::modifications::Modification;
-use pnets_shrunk::reducers::standard::{
-    IdentityPlaceReducer, IdentityTransitionReducer, ParallelSmartReducer, PseudoStart, R7Reducer,
-    RLReducer, SimpleChainReducer, SimpleLoopAgglomeration, WeightSimplification,
+use pnets_shrink::modifications::Modification;
+use pnets_shrink::reducers::standard::{
+    IdentityPlaceReducer, IdentityTransitionReducer, InvariantReducer, ParallelSmartReducer,
+    PseudoStart, RLReducer, SimpleChainReducer, SimpleLoopAgglomeration, SourceSinkReducer,
+    WeightSimplification,
 };
-use pnets_shrunk::reducers::{Chain5Reducer, ChainReducer, LoopReducer, Reduce, SmartReducer};
+use pnets_shrink::reducers::{
+    Chain3Reducer, Chain4Reducer, Chain5Reducer, Chain6Reducer, Chain7Reducer, ChainReducer,
+    LoopReducer, Reduce, SmartReducer,
+};
 use pnets_tina::ExporterBuilder;
 
+#[derive(clap::ArgEnum, Clone, Copy)]
+enum Format {
+    PNML,
+    Net,
+    Guess,
+}
+
+type AllReductions<N> = LoopReducer<
+    N,
+    Chain3Reducer<
+        N,
+        ParallelSmartReducer<
+            N,
+            ChainReducer<
+                N,
+                ParallelSmartReducer<
+                    N,
+                    Chain5Reducer<
+                        N,
+                        ParallelSmartReducer<
+                            N,
+                            ChainReducer<N, IdentityPlaceReducer, SimpleLoopAgglomeration>,
+                        >,
+                        IdentityTransitionReducer,
+                        SmartReducer<
+                            N,
+                            SimpleChainReducer,
+                            ChainReducer<N, IdentityPlaceReducer, SourceSinkReducer>,
+                            IdentityTransitionReducer,
+                        >,
+                        SourceSinkReducer,
+                        PseudoStart,
+                    >,
+                >,
+                RLReducer,
+            >,
+        >,
+        InvariantReducer,
+        WeightSimplification,
+    >,
+>;
+
+type RedundantExtraCompactReducer<N> = LoopReducer<
+    N,
+    ChainReducer<
+        N,
+        ParallelSmartReducer<
+            N,
+            ChainReducer<
+                N,
+                ParallelSmartReducer<
+                    N,
+                    Chain5Reducer<
+                        N,
+                        ParallelSmartReducer<
+                            N,
+                            ChainReducer<N, IdentityPlaceReducer, SimpleLoopAgglomeration>,
+                        >,
+                        IdentityTransitionReducer,
+                        SmartReducer<
+                            N,
+                            SimpleChainReducer,
+                            ChainReducer<N, IdentityPlaceReducer, SourceSinkReducer>,
+                            IdentityTransitionReducer,
+                        >,
+                        SourceSinkReducer,
+                        PseudoStart,
+                    >,
+                >,
+                RLReducer,
+            >,
+        >,
+        WeightSimplification,
+    >,
+>;
+
+type ExtraReductions<N> =
+    LoopReducer<N, Chain3Reducer<N, PseudoStart, RLReducer, WeightSimplification>>;
+
+type ExtraStructReductions<N> = LoopReducer<
+    N,
+    Chain4Reducer<N, PseudoStart, RLReducer, WeightSimplification, InvariantReducer>,
+>;
+
+type RedundantReductions<N> = LoopReducer<
+    N,
+    ParallelSmartReducer<
+        N,
+        Chain3Reducer<
+            N,
+            ParallelSmartReducer<N, IdentityPlaceReducer>,
+            IdentityTransitionReducer,
+            SourceSinkReducer,
+        >,
+    >,
+>;
+
+type RedundantStructReductions<N> = LoopReducer<
+    N,
+    ParallelSmartReducer<
+        N,
+        Chain4Reducer<
+            N,
+            ParallelSmartReducer<N, IdentityPlaceReducer>,
+            IdentityTransitionReducer,
+            SourceSinkReducer,
+            InvariantReducer,
+        >,
+    >,
+>;
+
+type RedundantExtraReductions<N> = LoopReducer<
+    N,
+    ParallelSmartReducer<
+        N,
+        Chain6Reducer<
+            N,
+            ParallelSmartReducer<N, IdentityPlaceReducer>,
+            IdentityTransitionReducer,
+            SourceSinkReducer,
+            PseudoStart,
+            RLReducer,
+            WeightSimplification,
+        >,
+    >,
+>;
+
+type RedundantStructExtraReductions<N> = LoopReducer<
+    N,
+    ParallelSmartReducer<
+        N,
+        Chain7Reducer<
+            N,
+            ParallelSmartReducer<N, IdentityPlaceReducer>,
+            IdentityTransitionReducer,
+            SourceSinkReducer,
+            PseudoStart,
+            RLReducer,
+            WeightSimplification,
+            InvariantReducer,
+        >,
+    >,
+>;
+
+type CompactReductions<N> =
+    LoopReducer<N, ChainReducer<N, SimpleLoopAgglomeration, SimpleChainReducer>>;
+type CompactStructReductions<N> =
+    LoopReducer<N, Chain3Reducer<N, SimpleLoopAgglomeration, SimpleChainReducer, InvariantReducer>>;
+
+type CompactExtraReductions<N> = LoopReducer<
+    N,
+    Chain5Reducer<
+        N,
+        SimpleLoopAgglomeration,
+        SimpleChainReducer,
+        PseudoStart,
+        RLReducer,
+        WeightSimplification,
+    >,
+>;
+
+type CompactStructExtraReductions<N> = LoopReducer<
+    N,
+    Chain6Reducer<
+        N,
+        SimpleLoopAgglomeration,
+        SimpleChainReducer,
+        PseudoStart,
+        RLReducer,
+        WeightSimplification,
+        InvariantReducer,
+    >,
+>;
+
+type CompactRedundantReductions<N> = LoopReducer<
+    N,
+    ParallelSmartReducer<
+        N,
+        ParallelSmartReducer<
+            N,
+            Chain4Reducer<
+                N,
+                ParallelSmartReducer<
+                    N,
+                    ChainReducer<N, IdentityPlaceReducer, SimpleLoopAgglomeration>,
+                >,
+                IdentityTransitionReducer,
+                SmartReducer<
+                    N,
+                    SimpleChainReducer,
+                    ChainReducer<N, IdentityPlaceReducer, SourceSinkReducer>,
+                    IdentityTransitionReducer,
+                >,
+                SourceSinkReducer,
+            >,
+        >,
+    >,
+>;
+
+type CompactStructRedundantReductions<N> = LoopReducer<
+    N,
+    ChainReducer<
+        N,
+        ParallelSmartReducer<
+            N,
+            ParallelSmartReducer<
+                N,
+                Chain4Reducer<
+                    N,
+                    ParallelSmartReducer<
+                        N,
+                        ChainReducer<N, IdentityPlaceReducer, SimpleLoopAgglomeration>,
+                    >,
+                    IdentityTransitionReducer,
+                    SmartReducer<
+                        N,
+                        SimpleChainReducer,
+                        ChainReducer<N, IdentityPlaceReducer, SourceSinkReducer>,
+                        IdentityTransitionReducer,
+                    >,
+                    SourceSinkReducer,
+                >,
+            >,
+        >,
+        InvariantReducer,
+    >,
+>;
+
+#[derive(Parser)]
+#[clap(author, version, about, long_about = None)]
+struct Args {
+    /// File to read ("-" for stdin)
+    #[clap(short, long, default_value = "-")]
+    input: String,
+    /// File to write ("-" for stdout)
+    #[clap(short, long, default_value = "-")]
+    output: String,
+    /// Format for the input
+    #[clap(short, long, default_value_t=Format::Guess)]
+    #[clap(arg_enum)]
+    format: Format,
+    /// Print equation with the network
+    #[clap(short, long)]
+    equations: bool,
+    /// Remove all disconnected transitions and useless places from the network after reductions
+    #[clap(long)]
+    clean: bool,
+    #[clap(long)]
+    redundant: bool,
+    #[clap(long)]
+    compact: bool,
+    #[clap(long)]
+    extra: bool,
+    #[clap(long, name = "struct")]
+    struct_: bool,
+}
+
 fn main() -> Result<(), Box<dyn Error>> {
-    let matches = App::new("PNet reducer")
-        .version("1.0")
-        .author("Louis C. <louis.chauvet@free.fr>")
-        .about("Reduce a petri network")
-        .arg(
-            Arg::with_name("INPUT")
-                .help("Sets the input file to use")
-                .short("i")
-                .takes_value(true)
-                .long("input"),
-        )
-        .arg(
-            Arg::with_name("OUTPUT")
-                .help("Sets the output file to use")
-                .short("o")
-                .long("output")
-                .takes_value(true),
-        )
-        .arg(
-            Arg::with_name("CLEAN")
-                .help("Remove all disconnected transitions and places for final output")
-                .long("clean"),
-        )
-        .arg(
-            Arg::with_name("EQUATIONS")
-                .help("Print equtions with output")
-                .long("equations"),
-        )
-        .arg(
-            Arg::with_name("RENUMBER")
-                .help("Write renumbered original network")
-                .long("renumber"),
-        )
-        .get_matches();
+    let mut args = Args::parse();
 
     info!("Start parsing.");
     let now = SystemTime::now();
+    let buf_reader: Box<dyn BufRead> = match (args.input.as_ref(), args.format) {
+        ("-", Format::Guess) => {
+            args.format = Format::Net;
+            Box::new(BufReader::new(stdin()))
+        }
+        ("-", _) => Box::new(BufReader::new(stdin())),
+        (s, Format::Guess) => {
+            if s.ends_with("pnml") {
+                args.format = Format::PNML;
+            }
+            Box::new(BufReader::new(File::open(s)?))
+        }
+        (s, _) => Box::new(BufReader::new(File::open(s)?)),
+    };
 
-    let ptnet: Ptnet = quick_xml::de::from_reader(BufReader::new(File::open(
-        matches.value_of("INPUT").unwrap(),
-    )?))?;
-    let mut nets: Vec<Net> = (&ptnet).try_into()?;
-    let mut net = &mut nets[0];
+    let mut net = match args.format {
+        Format::Net => pnets_tina::Parser::new(buf_reader).parse()?.into(),
+        Format::PNML => {
+            let ptnet: Ptnet = quick_xml::de::from_reader(buf_reader)?;
+            let mut nets: Vec<Net> = (&ptnet).try_into()?;
+            nets.pop().unwrap()
+        }
+        Format::Guess => pnets_tina::Parser::new(buf_reader).parse()?.into(),
+    };
 
     info!("Parsing done: {:?}", now.elapsed()?);
     info!("Start reduction.");
     let mut modifications = vec![];
-    LoopReducer::<
-        _,
-        ChainReducer<
-            _,
-            ParallelSmartReducer<
-                _,
-                ChainReducer<
-                    _,
-                    ParallelSmartReducer<
-                        _,
-                        Chain5Reducer<
-                            _,
-                            ParallelSmartReducer<
-                                _,
-                                ChainReducer<_, IdentityPlaceReducer, SimpleLoopAgglomeration>,
-                            >,
-                            IdentityTransitionReducer,
-                            SmartReducer<
-                                _,
-                                SimpleChainReducer,
-                                ChainReducer<_, IdentityPlaceReducer, R7Reducer>,
-                                IdentityTransitionReducer,
-                            >,
-                            R7Reducer,
-                            PseudoStart,
-                        >,
-                    >,
-                    RLReducer,
-                >,
-            >,
-            WeightSimplification,
-        >,
-    >::reduce(&mut net, &mut modifications);
+    match (args.redundant, args.compact, args.extra, args.struct_) {
+        (true, true, true, true) => AllReductions::<_>::reduce(&mut net, &mut modifications),
+        (false, true, true, true) => {
+            CompactStructExtraReductions::<_>::reduce(&mut net, &mut modifications)
+        }
+        (true, false, true, true) => {
+            RedundantStructExtraReductions::<_>::reduce(&mut net, &mut modifications)
+        }
+        (false, false, true, true) => {
+            ExtraStructReductions::<_>::reduce(&mut net, &mut modifications)
+        }
+        (true, true, false, true) => {
+            CompactStructRedundantReductions::<_>::reduce(&mut net, &mut modifications)
+        }
+        (false, true, false, true) => {
+            CompactStructReductions::<_>::reduce(&mut net, &mut modifications)
+        }
+        (true, false, false, true) => {
+            RedundantStructReductions::<_>::reduce(&mut net, &mut modifications)
+        }
+        (false, false, false, true) => InvariantReducer::reduce(&mut net, &mut modifications),
+        (true, true, true, false) => {
+            RedundantExtraCompactReducer::<_>::reduce(&mut net, &mut modifications)
+        }
+        (false, true, true, false) => {
+            CompactExtraReductions::<_>::reduce(&mut net, &mut modifications)
+        }
+        (true, false, true, false) => {
+            RedundantExtraReductions::<_>::reduce(&mut net, &mut modifications)
+        }
+        (false, false, true, false) => ExtraReductions::<_>::reduce(&mut net, &mut modifications),
+        (true, true, false, false) => {
+            CompactRedundantReductions::<_>::reduce(&mut net, &mut modifications)
+        }
+        (false, true, false, false) => CompactReductions::<_>::reduce(&mut net, &mut modifications),
+        (true, false, false, false) => {
+            RedundantReductions::<_>::reduce(&mut net, &mut modifications)
+        }
+        (false, false, false, false) => {}
+    }
 
     let now = SystemTime::now();
     info!(
@@ -107,118 +358,138 @@ fn main() -> Result<(), Box<dyn Error>> {
         now.elapsed()?,
         modifications.len()
     );
-    write_output(&net, &modifications, &matches)?;
+    write_output(&net, &modifications, args)?;
     Ok(())
 }
 
 fn write_output(
     net: &Net,
     modifications: &[Modification],
-    matches: &ArgMatches,
+    args: Args,
 ) -> Result<(), Box<dyn Error>> {
     info!("Start writing new network.");
     let now = SystemTime::now();
-    match matches.value_of("OUTPUT") {
-        None => {}
-        Some(f) if f != "-" => {
-            let mut file = File::create(f)?;
-            if matches.is_present("EQUATIONS") {
-                write_modifications(&modifications, &mut file, &net)?;
-            }
-            ExporterBuilder::new(file)
-                .with_all_places(!matches.is_present("CLEAN"))
-                .with_disconnected_transitions(matches.is_present("CLEAN"))
-                .build()
-                .export(&net.into())?;
-            if matches.is_present("RENUMBER") {
-                let net = match matches.value_of("INPUT") {
-                    Some("-") | None => {
-                        pnets_tina::Parser::new(BufReader::new(io::stdin())).parse()?
-                    }
-                    Some(f) => pnets_tina::Parser::new(BufReader::new(File::open(f)?)).parse()?,
-                };
+    let mut buf_writer: Box<dyn Write> = match args.output.as_ref() {
+        "-" => Box::new(stdout()),
+        s => Box::new(File::create(s)?),
+    };
 
-                ExporterBuilder::new(File::create(f.to_owned() + ".orig.net")?)
-                    .with_all_places(!matches.is_present("CLEAN"))
-                    .with_disconnected_transitions(matches.is_present("CLEAN"))
-                    .build()
-                    .export(&net)?;
-            }
-        }
-        Some(_) => {
-            if matches.is_present("EQUATIONS") {
-                write_modifications(&modifications, &mut stdout(), &net)?;
-            }
-            ExporterBuilder::new(stdout())
-                .with_all_places(!matches.is_present("CLEAN"))
-                .with_disconnected_transitions(matches.is_present("CLEAN"))
-                .build()
-                .export(&net.into())?
-        }
+    if args.equations {
+        write_modifications(&modifications, buf_writer.as_mut(), &net)?;
     }
+    ExporterBuilder::new(buf_writer.as_mut())
+        .with_all_places(!args.clean)
+        .with_disconnected_transitions(args.clean)
+        .build()
+        .export(&net.into())?;
     info!("Writing done: {:?}.", now.elapsed()?);
     Ok(())
 }
 
-fn write_modifications<Writer: Write>(
+fn write_modifications(
     modifications: &[Modification],
-    writer: &mut Writer,
+    writer: &mut dyn Write,
     net: &Net,
 ) -> Result<(), Box<dyn Error>> {
+    writer.write_all("# generated equations\n".as_ref())?;
     for modification in modifications {
         match modification {
             Modification::Agglomeration(agg) => {
-                writer.write_all(
-                    format!(
-                        "# A |- {}*{} = ",
-                        agg.factor,
-                        net.get_name_by_index(&NodeId::Place(agg.new_place))
-                            .unwrap()
-                    )
-                    .as_ref(),
-                )?;
-                for &(pl, w) in &agg.deleted_places {
+                if agg.factor == 1 {
                     writer.write_all(
                         format!(
-                            "{}*{} + ",
-                            w,
-                            net.get_name_by_index(&NodeId::Place(pl)).unwrap()
+                            "# A |- {} = ",
+                            net.get_name_by_index(&NodeId::Place(agg.new_place))
+                                .unwrap()
+                        )
+                        .as_ref(),
+                    )?;
+                } else {
+                    writer.write_all(
+                        format!(
+                            "# A |- {}*{} = ",
+                            agg.factor,
+                            net.get_name_by_index(&NodeId::Place(agg.new_place))
+                                .unwrap()
                         )
                         .as_ref(),
                     )?;
                 }
-                writer.write_all(format!("{}\n", agg.constant).as_ref())?;
+                for i in 0..agg.deleted_places.len() {
+                    let (pl, w) = agg.deleted_places[i];
+                    if w == 1 {
+                        writer.write_all(
+                            format!("{}", net.get_name_by_index(&NodeId::Place(pl)).unwrap())
+                                .as_ref(),
+                        )?;
+                    } else {
+                        writer.write_all(
+                            format!(
+                                "{}*{}",
+                                w,
+                                net.get_name_by_index(&NodeId::Place(pl)).unwrap()
+                            )
+                            .as_ref(),
+                        )?;
+                    }
+                    if i + 1 != agg.deleted_places.len() {
+                        writer.write_all(" + ".as_ref())?;
+                    }
+                }
+                if agg.constant != 0 {
+                    writer.write_all(format!("{}", agg.constant).as_ref())?;
+                }
+                writer.write_all("\n".as_ref())?;
             }
             Modification::Reduction(red) => {
                 writer.write_all(b"# R |- ")?;
-                writer.write_all(format!("{}", red.constant).as_ref())?;
-                for (pl, w) in &red.equals_to {
-                    writer.write_all(b" + ")?;
-                    writer.write_all(
-                        format!(
-                            "{}*{}",
-                            w,
-                            net.get_name_by_index(&NodeId::Place(*pl)).unwrap()
-                        )
-                        .as_ref(),
-                    )?;
+                if red.constant != 0 {
+                    writer.write_all(format!("{} + ", red.constant).as_ref())?;
+                }
+                for i in 0..red.equals_to.len() {
+                    let (pl, w) = red.equals_to[i];
+                    if w == 1 {
+                        writer.write_all(
+                            format!("{}", net.get_name_by_index(&NodeId::Place(pl)).unwrap())
+                                .as_ref(),
+                        )?;
+                    } else {
+                        writer.write_all(
+                            format!(
+                                "{}*{}",
+                                w,
+                                net.get_name_by_index(&NodeId::Place(pl)).unwrap()
+                            )
+                            .as_ref(),
+                        )?;
+                    }
+                    if i + 1 != red.equals_to.len() {
+                        writer.write_all(b" + ")?;
+                    }
                 }
                 writer.write_all(b" = ")?;
                 let mut first = true;
-                for (pl, w) in &red.deleted_places {
+                for &(pl, w) in &red.deleted_places {
                     if first {
                         first = false;
                     } else {
                         writer.write_all(b" + ")?;
                     }
-                    writer.write_all(
-                        format!(
-                            "{}*{}",
-                            w,
-                            net.get_name_by_index(&NodeId::Place(*pl)).unwrap()
-                        )
-                        .as_ref(),
-                    )?;
+                    if w == 1 {
+                        writer.write_all(
+                            format!("{}", net.get_name_by_index(&NodeId::Place(pl)).unwrap())
+                                .as_ref(),
+                        )?;
+                    } else {
+                        writer.write_all(
+                            format!(
+                                "{}*{}",
+                                w,
+                                net.get_name_by_index(&NodeId::Place(pl)).unwrap()
+                            )
+                            .as_ref(),
+                        )?;
+                    }
                 }
                 writer.write_all(b"\n")?;
             }
@@ -226,35 +497,54 @@ fn write_modifications<Writer: Write>(
             Modification::InequalityReduction(ine) => {
                 writer.write_all(b"# I |- ")?;
                 let mut first = true;
-                for (pl, w) in &ine.deleted_places {
+                for &(pl, w) in &ine.deleted_places {
                     if first {
                         first = false;
                     } else {
                         writer.write_all(b" + ")?;
                     }
-                    writer.write_all(
-                        format!(
-                            "{}*{}",
-                            w,
-                            net.get_name_by_index(&NodeId::Place(*pl)).unwrap()
-                        )
-                        .as_ref(),
-                    )?;
+                    if w == 1 {
+                        writer.write_all(
+                            format!("{}", net.get_name_by_index(&NodeId::Place(pl)).unwrap())
+                                .as_ref(),
+                        )?;
+                    } else {
+                        writer.write_all(
+                            format!(
+                                "{}*{}",
+                                w,
+                                net.get_name_by_index(&NodeId::Place(pl)).unwrap()
+                            )
+                            .as_ref(),
+                        )?;
+                    }
                 }
                 writer.write_all(b" <= ")?;
-                for (pl, w) in &ine.kept_places {
-                    writer.write_all(
-                        format!(
-                            "{}*{} + ",
-                            w,
-                            net.get_name_by_index(&NodeId::Place(*pl)).unwrap()
-                        )
-                        .as_ref(),
-                    )?;
+                for i in 0..ine.kept_places.len() {
+                    let (pl, w) = ine.kept_places[i];
+                    if w == 1 {
+                        writer.write_all(
+                            format!("{} + ", net.get_name_by_index(&NodeId::Place(pl)).unwrap())
+                                .as_ref(),
+                        )?;
+                    } else {
+                        writer.write_all(
+                            format!(
+                                "{}*{} + ",
+                                w,
+                                net.get_name_by_index(&NodeId::Place(pl)).unwrap()
+                            )
+                            .as_ref(),
+                        )?;
+                    }
                 }
-                writer.write_all(format!("{}\n", ine.constant).as_ref())?;
+                if ine.constant != 0 {
+                    writer.write_all(format!("{}", ine.constant).as_ref())?;
+                }
+                writer.write_all("\n".as_ref())?;
             }
         }
     }
+    writer.write_all("\n".as_ref())?;
     Ok(())
 }
