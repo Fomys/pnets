@@ -1,7 +1,7 @@
 pub use crate::core::{
     AnnotationGraphics, EdgeGraphics, Name, NodeGraphics, PlaceReference, TransitionReference,
 };
-use crate::core::{Net, NotNul, Page, PositiveInteger, SimpleText};
+use crate::core::{Net, NotNul, Page, PageItem, PositiveInteger, SimpleText};
 use pnets::{NetError, NodeId};
 use serde::{Deserialize, Serialize};
 use std::convert::TryInto;
@@ -56,25 +56,28 @@ impl Page<Place, Transition, Arc> {
         net: &mut pnets::standard::Net,
         reference_map: &mut HashMap<String, String>,
     ) -> Result<(), Box<dyn Error>> {
-        for page in &self.pages {
+        for page in self.pages() {
             page.concat_places_transitions_to_net(net, reference_map)?;
         }
 
-        for place in &self.places {
+        for place in self.places() {
             let pl = net.create_place();
             net.rename_node(NodeId::Place(pl), &place.id)?;
+            if let Some(marking) = &place.marking {
+                net[pl].initial = marking.positive.value;
+            }
         }
 
-        for transition in &self.transitions {
+        for transition in self.transitions() {
             let tr = net.create_transition();
             net.rename_node(NodeId::Transition(tr), &transition.id)?;
         }
 
-        for pl_ref in &self.place_references {
+        for pl_ref in self.place_references() {
             reference_map.insert(pl_ref.id.clone(), pl_ref.ref_.clone());
         }
 
-        for tr_ref in &self.transition_references {
+        for tr_ref in self.transition_references() {
             reference_map.insert(tr_ref.id.clone(), tr_ref.ref_.clone());
         }
         Ok(())
@@ -85,7 +88,7 @@ impl Page<Place, Transition, Arc> {
         net: &mut pnets::standard::Net,
         reference_map: &HashMap<String, String>,
     ) -> Result<(), NetError> {
-        for arc in &self.arcs {
+        for arc in self.arcs() {
             let source = {
                 let mut id = None;
                 let mut source = arc.source.clone();
@@ -214,10 +217,7 @@ impl From<&Vec<pnets::standard::Net>> for Ptnet {
                 })
             }
 
-            let mut page = Page::<Place, Transition, Arc> {
-                id: format!("{}-main-page", new_net.id,),
-                ..Page::default()
-            };
+            let mut page = Page::<Place, Transition, Arc> { items: vec![] };
 
             for (pl, place) in net.places.iter_enumerated() {
                 let mut new_place = Place {
@@ -234,7 +234,7 @@ impl From<&Vec<pnets::standard::Net>> for Ptnet {
                         });
                     }
                 }
-                page.places.push(new_place);
+                page.items.push(PageItem::Place(new_place));
             }
             for (tr, transition) in net.transitions.iter_enumerated() {
                 let mut new_transition = Transition {
@@ -253,7 +253,7 @@ impl From<&Vec<pnets::standard::Net>> for Ptnet {
                 }
                 for &(pl, w) in transition.consume.iter() {
                     arc_count += 1;
-                    page.arcs.push(Arc {
+                    page.items.push(PageItem::Arc(Arc {
                         id: format!(
                             "{}-arcs-{}-{}-{}",
                             new_net.id,
@@ -269,11 +269,11 @@ impl From<&Vec<pnets::standard::Net>> for Ptnet {
                             value: NotNul { value: w },
                             graphics: None,
                         }),
-                    })
+                    }))
                 }
                 for &(pl, w) in transition.produce.iter() {
                     arc_count += 1;
-                    page.arcs.push(Arc {
+                    page.items.push(PageItem::Arc(Arc {
                         id: format!(
                             "{}-arcs-{}-{}-{}",
                             new_net.id,
@@ -289,9 +289,9 @@ impl From<&Vec<pnets::standard::Net>> for Ptnet {
                             value: NotNul { value: w },
                             graphics: None,
                         }),
-                    })
+                    }))
                 }
-                page.transitions.push(new_transition);
+                page.items.push(PageItem::Transition(new_transition));
             }
             new_net.pages.push(page);
             pnml.nets.push(new_net);

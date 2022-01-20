@@ -1,0 +1,12 @@
+[package]
+name = "pnets_print"
+version = "0.1.0"
+authors = ["Louis Chauvet <louis.chauvet@free.fr>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+pnets = {path = "../pnets"}
+pnets_tina = {path= "../pnets_tina" }
+clap = "2.33"

@@ -3,5 +3,11 @@ members = [
     "pnets",
     "pnets_tina",
     "pnets_shrink",
-    "pnets_pnml"
+    "pnets_pnml",
+    "pnets_print"
 ]
+
+[profile.release]
+opt-level = 3
+lto = true
+panic = 'abort'

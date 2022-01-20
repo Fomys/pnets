@@ -1,4 +1,6 @@
 use serde::{Deserialize, Serialize, Serializer};
+use std::iter::FilterMap;
+use std::slice::Iter;
 
 pub type Decimal = f64;
 pub type Color = String;
@@ -30,7 +32,7 @@ pub struct NotNul {
 #[derive(Serialize, Deserialize)]
 pub struct PositiveInteger {
     #[serde(rename = "$value")]
-    value: usize,
+    pub(crate) value: usize,
 }
 
 #[derive(Serialize, Deserialize)]
@@ -233,22 +235,118 @@ pub struct TransitionReference {
     pub graphics: Option<NodeGraphics>,
 }
 
-#[derive(Serialize, Deserialize, Default)]
+#[derive(Serialize, Deserialize)]
 #[serde(rename = "page")]
 pub struct Page<Place, Transition, Arc> {
-    pub id: String,
-    #[serde(rename = "page", default)]
-    pub pages: Vec<Page<Place, Transition, Arc>>,
-    #[serde(rename = "place", default)]
-    pub places: Vec<Place>,
-    #[serde(rename = "transition", default)]
-    pub transitions: Vec<Transition>,
-    #[serde(rename = "referencePlace", default)]
-    pub place_references: Vec<PlaceReference>,
-    #[serde(rename = "referenceTransition", default)]
-    pub transition_references: Vec<TransitionReference>,
-    #[serde(rename = "arc", default)]
-    pub arcs: Vec<Arc>,
+    #[serde(rename = "$value")]
+    pub(crate) items: Vec<PageItem<Place, Transition, Arc>>,
+}
+
+impl<Place, Transition, Arc> Page<Place, Transition, Arc> {
+    pub(crate) fn pages(
+        &self,
+    ) -> FilterMap<
+        Iter<'_, PageItem<Place, Transition, Arc>>,
+        fn(&PageItem<Place, Transition, Arc>) -> Option<&Page<Place, Transition, Arc>>,
+    > {
+        self.items.iter().filter_map(|i| {
+            if let PageItem::Page(pa) = i {
+                Some(pa)
+            } else {
+                None
+            }
+        })
+    }
+    pub(crate) fn places(
+        &self,
+    ) -> FilterMap<
+        Iter<'_, PageItem<Place, Transition, Arc>>,
+        fn(&PageItem<Place, Transition, Arc>) -> Option<&Place>,
+    > {
+        self.items.iter().filter_map(|i| {
+            if let PageItem::Place(pa) = i {
+                Some(pa)
+            } else {
+                None
+            }
+        })
+    }
+    pub(crate) fn transitions(
+        &self,
+    ) -> FilterMap<
+        Iter<'_, PageItem<Place, Transition, Arc>>,
+        fn(&PageItem<Place, Transition, Arc>) -> Option<&Transition>,
+    > {
+        self.items.iter().filter_map(|i| {
+            if let PageItem::Transition(pa) = i {
+                Some(pa)
+            } else {
+                None
+            }
+        })
+    }
+    pub(crate) fn place_references(
+        &self,
+    ) -> FilterMap<
+        Iter<'_, PageItem<Place, Transition, Arc>>,
+        fn(&PageItem<Place, Transition, Arc>) -> Option<&PlaceReference>,
+    > {
+        self.items.iter().filter_map(|i| {
+            if let PageItem::PlaceReference(pa) = i {
+                Some(pa)
+            } else {
+                None
+            }
+        })
+    }
+    pub(crate) fn transition_references(
+        &self,
+    ) -> FilterMap<
+        Iter<'_, PageItem<Place, Transition, Arc>>,
+        fn(&PageItem<Place, Transition, Arc>) -> Option<&TransitionReference>,
+    > {
+        self.items.iter().filter_map(|i| {
+            if let PageItem::TransitionReference(pa) = i {
+                Some(pa)
+            } else {
+                None
+            }
+        })
+    }
+    pub(crate) fn arcs(
+        &self,
+    ) -> FilterMap<
+        Iter<'_, PageItem<Place, Transition, Arc>>,
+        fn(&PageItem<Place, Transition, Arc>) -> Option<&Arc>,
+    > {
+        self.items.iter().filter_map(|i| {
+            if let PageItem::Arc(pa) = i {
+                Some(pa)
+            } else {
+                None
+            }
+        })
+    }
+}
+
+#[derive(Serialize, Deserialize)]
+pub enum PageItem<Place, Transition, Arc> {
+    #[serde(rename = "page")]
+    Page(Page<Place, Transition, Arc>),
+    #[serde(rename = "place")]
+    Place(Place),
+    #[serde(rename = "transition")]
+    Transition(Transition),
+    #[serde(rename = "referencePlace")]
+    PlaceReference(PlaceReference),
+    #[serde(rename = "referenceTransition")]
+    TransitionReference(TransitionReference),
+    #[serde(rename = "arc")]
+    Arc(Arc),
+    #[serde(rename = "name")]
+    Name(Name),
+    #[serde(rename = "toolspecific")]
+    Toolspecific,
 }
 
 #[derive(Serialize, Deserialize, Default)]
