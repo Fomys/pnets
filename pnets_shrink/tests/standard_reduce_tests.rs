@@ -1,12 +1,12 @@
 use pnets::standard::Net;
-use pnets_shrunk::modifications::{
+use pnets_shrink::modifications::{
     Agglomeration, InequalityReduction, Modification, Reduction, TransitionElimination,
 };
-use pnets_shrunk::reducers::standard::{
+use pnets_shrink::reducers::standard::{
     IdentityPlaceReducer, IdentityTransitionReducer, ParallelPlaceReducer,
-    ParallelTransitionReducer, R7Reducer, SimpleChainReducer,
+    ParallelTransitionReducer, SimpleChainReducer, SourceSinkReducer,
 };
-use pnets_shrunk::reducers::Reduce;
+use pnets_shrink::reducers::Reduce;
 
 #[test]
 fn simple_chain_agglomeration() {
@@ -87,12 +87,12 @@ fn constant_places_elimination() {
 }
 
 #[test]
-fn r7_convert() {
-    let parser = pnets_tina::Parser::new(include_str!("r7_convert.net").as_bytes());
+fn source_sink_convert() {
+    let parser = pnets_tina::Parser::new(include_str!("source_sink_convert.net").as_bytes());
 
     let mut net = Net::from(parser.parse().unwrap());
     let mut modifications = vec![];
-    R7Reducer::reduce(&mut net, &mut modifications);
+    SourceSinkReducer::reduce(&mut net, &mut modifications);
     assert_eq!(
         modifications[0],
         Modification::InequalityReduction(InequalityReduction {
