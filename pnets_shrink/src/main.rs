@@ -444,8 +444,8 @@ fn write_modifications(
                 if red.constant != 0 {
                     writer.write_all(format!("{} + ", red.constant).as_ref())?;
                 }
-                for i in 0..red.equals_to.len() {
-                    let (pl, w) = red.equals_to[i];
+                for i in 0..red.deleted_places.len() {
+                    let (pl, w) = red.deleted_places[i];
                     if w == 1 {
                         writer.write_all(
                             format!("{}", net.get_name_by_index(&NodeId::Place(pl)).unwrap())
@@ -461,13 +461,13 @@ fn write_modifications(
                             .as_ref(),
                         )?;
                     }
-                    if i + 1 != red.equals_to.len() {
+                    if i + 1 != red.deleted_places.len() {
                         writer.write_all(b" + ")?;
                     }
                 }
                 writer.write_all(b" = ")?;
                 let mut first = true;
-                for &(pl, w) in &red.deleted_places {
+                for &(pl, w) in &red.equals_to {
                     if first {
                         first = false;
                     } else {

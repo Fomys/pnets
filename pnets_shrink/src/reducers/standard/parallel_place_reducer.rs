@@ -51,12 +51,14 @@ impl PlaceReduce<Net> for ParallelPlaceReducer {
                             .all(|(_, w_1, w_2)| w_1 == w_2)
                 })
             {
-                modifications.push(Modification::Reduction(Reduction {
-                    deleted_places: vec![(pl_2, 1)],
-                    equals_to: vec![(pl_1, 1)],
-                    constant: 0,
-                }));
-                places_to_delete.push(pl_2);
+                if Some(&pl_2) != places_to_delete.last() {
+                    modifications.push(Modification::Reduction(Reduction {
+                        deleted_places: vec![(pl_2, 1)],
+                        equals_to: vec![(pl_1, 1)],
+                        constant: 0,
+                    }));
+                    places_to_delete.push(pl_2);
+                }
             }
             for pl in places_to_delete {
                 net.delete_place(pl);
