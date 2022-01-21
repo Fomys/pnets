@@ -97,12 +97,10 @@ impl SimpleLoopAgglomerationGraph {
         }) {
             if self.nodes[tr].num.is_none() {
                 self.walk(net, tr);
-                self.nodes[source_tr].accessible_num = Some(
-                    self.nodes[source_tr]
-                        .accessible_num
-                        .unwrap()
-                        .min(self.nodes[tr].accessible_num.unwrap()),
-                );
+                self.nodes[source_tr].accessible_num = Some(match self.nodes[tr].accessible_num {
+                    Some(n) => self.nodes[source_tr].accessible_num.unwrap().min(n),
+                    None => self.nodes[source_tr].accessible_num.unwrap(),
+                });
             } else if self.nodes[tr].in_stack {
                 self.nodes[source_tr].accessible_num = Some(
                     self.nodes[source_tr]

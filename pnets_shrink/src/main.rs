@@ -11,9 +11,9 @@ use pnets::NodeId;
 use pnets_pnml::ptnet::Ptnet;
 use pnets_shrink::modifications::Modification;
 use pnets_shrink::reducers::standard::{
-    IdentityPlaceReducer, IdentityTransitionReducer, InvariantReducer, ParallelSmartReducer,
-    PseudoStart, RLReducer, SimpleChainReducer, SimpleLoopAgglomeration, SourceSinkReducer,
-    WeightSimplification,
+    IdentityPlaceReducer, IdentityTransitionReducer, InvariantReducer, ParallelPlaceReducer,
+    ParallelSmartReducer, ParallelTransitionReducer, PseudoStart, RLReducer, SimpleChainReducer,
+    SimpleLoopAgglomeration, SourceSinkReducer, WeightSimplification,
 };
 use pnets_shrink::reducers::{
     Chain3Reducer, Chain4Reducer, Chain5Reducer, Chain6Reducer, Chain7Reducer, ChainReducer,
@@ -30,70 +30,62 @@ enum Format {
 
 type AllReductions<N> = LoopReducer<
     N,
-    Chain3Reducer<
+    Chain6Reducer<
         N,
         ParallelSmartReducer<
             N,
-            ChainReducer<
+            Chain5Reducer<
                 N,
                 ParallelSmartReducer<
                     N,
-                    Chain5Reducer<
-                        N,
-                        ParallelSmartReducer<
-                            N,
-                            ChainReducer<N, IdentityPlaceReducer, SimpleLoopAgglomeration>,
-                        >,
-                        IdentityTransitionReducer,
-                        SmartReducer<
-                            N,
-                            SimpleChainReducer,
-                            ChainReducer<N, IdentityPlaceReducer, SourceSinkReducer>,
-                            IdentityTransitionReducer,
-                        >,
-                        SourceSinkReducer,
-                        PseudoStart,
-                    >,
+                    ChainReducer<N, IdentityPlaceReducer, SimpleLoopAgglomeration>,
                 >,
-                RLReducer,
+                IdentityTransitionReducer,
+                SmartReducer<
+                    N,
+                    SimpleChainReducer,
+                    ChainReducer<N, IdentityPlaceReducer, SourceSinkReducer>,
+                    IdentityTransitionReducer,
+                >,
+                SourceSinkReducer,
+                PseudoStart,
             >,
         >,
-        InvariantReducer,
+        RLReducer,
         WeightSimplification,
+        ParallelPlaceReducer,
+        ParallelTransitionReducer,
+        InvariantReducer,
     >,
 >;
 
 type RedundantExtraCompactReducer<N> = LoopReducer<
     N,
-    ChainReducer<
+    Chain5Reducer<
         N,
         ParallelSmartReducer<
             N,
-            ChainReducer<
+            Chain5Reducer<
                 N,
                 ParallelSmartReducer<
                     N,
-                    Chain5Reducer<
-                        N,
-                        ParallelSmartReducer<
-                            N,
-                            ChainReducer<N, IdentityPlaceReducer, SimpleLoopAgglomeration>,
-                        >,
-                        IdentityTransitionReducer,
-                        SmartReducer<
-                            N,
-                            SimpleChainReducer,
-                            ChainReducer<N, IdentityPlaceReducer, SourceSinkReducer>,
-                            IdentityTransitionReducer,
-                        >,
-                        SourceSinkReducer,
-                        PseudoStart,
-                    >,
+                    ChainReducer<N, IdentityPlaceReducer, SimpleLoopAgglomeration>,
                 >,
-                RLReducer,
+                IdentityTransitionReducer,
+                SmartReducer<
+                    N,
+                    SimpleChainReducer,
+                    ChainReducer<N, IdentityPlaceReducer, SourceSinkReducer>,
+                    IdentityTransitionReducer,
+                >,
+                SourceSinkReducer,
+                PseudoStart,
             >,
         >,
+        RLReducer,
         WeightSimplification,
+        ParallelPlaceReducer,
+        ParallelTransitionReducer,
     >,
 >;
 
@@ -107,61 +99,81 @@ type ExtraStructReductions<N> = LoopReducer<
 
 type RedundantReductions<N> = LoopReducer<
     N,
-    ParallelSmartReducer<
+    Chain3Reducer<
         N,
-        Chain3Reducer<
+        ParallelSmartReducer<
             N,
-            ParallelSmartReducer<N, IdentityPlaceReducer>,
-            IdentityTransitionReducer,
-            SourceSinkReducer,
+            Chain3Reducer<
+                N,
+                ParallelSmartReducer<N, IdentityPlaceReducer>,
+                IdentityTransitionReducer,
+                SourceSinkReducer,
+            >,
         >,
+        ParallelPlaceReducer,
+        ParallelTransitionReducer,
     >,
 >;
 
 type RedundantStructReductions<N> = LoopReducer<
     N,
-    ParallelSmartReducer<
+    Chain3Reducer<
         N,
-        Chain4Reducer<
+        ParallelSmartReducer<
             N,
-            ParallelSmartReducer<N, IdentityPlaceReducer>,
-            IdentityTransitionReducer,
-            SourceSinkReducer,
-            InvariantReducer,
+            Chain4Reducer<
+                N,
+                ParallelSmartReducer<N, IdentityPlaceReducer>,
+                IdentityTransitionReducer,
+                SourceSinkReducer,
+                InvariantReducer,
+            >,
         >,
+        ParallelPlaceReducer,
+        ParallelTransitionReducer,
     >,
 >;
 
 type RedundantExtraReductions<N> = LoopReducer<
     N,
-    ParallelSmartReducer<
+    Chain3Reducer<
         N,
-        Chain6Reducer<
+        ParallelSmartReducer<
             N,
-            ParallelSmartReducer<N, IdentityPlaceReducer>,
-            IdentityTransitionReducer,
-            SourceSinkReducer,
-            PseudoStart,
-            RLReducer,
-            WeightSimplification,
+            Chain6Reducer<
+                N,
+                ParallelSmartReducer<N, IdentityPlaceReducer>,
+                IdentityTransitionReducer,
+                SourceSinkReducer,
+                PseudoStart,
+                RLReducer,
+                WeightSimplification,
+            >,
         >,
+        ParallelPlaceReducer,
+        ParallelTransitionReducer,
     >,
 >;
 
 type RedundantStructExtraReductions<N> = LoopReducer<
     N,
-    ParallelSmartReducer<
+    Chain3Reducer<
         N,
-        Chain7Reducer<
+        ParallelSmartReducer<
             N,
-            ParallelSmartReducer<N, IdentityPlaceReducer>,
-            IdentityTransitionReducer,
-            SourceSinkReducer,
-            PseudoStart,
-            RLReducer,
-            WeightSimplification,
-            InvariantReducer,
+            Chain7Reducer<
+                N,
+                ParallelSmartReducer<N, IdentityPlaceReducer>,
+                IdentityTransitionReducer,
+                SourceSinkReducer,
+                PseudoStart,
+                RLReducer,
+                WeightSimplification,
+                InvariantReducer,
+            >,
         >,
+        ParallelPlaceReducer,
+        ParallelTransitionReducer,
     >,
 >;
 
@@ -197,54 +209,40 @@ type CompactStructExtraReductions<N> = LoopReducer<
 
 type CompactRedundantReductions<N> = LoopReducer<
     N,
-    ParallelSmartReducer<
+    Chain3Reducer<
         N,
-        ParallelSmartReducer<
+        Chain4Reducer<
             N,
-            Chain4Reducer<
+            ParallelSmartReducer<N, ChainReducer<N, IdentityPlaceReducer, SimpleLoopAgglomeration>>,
+            IdentityTransitionReducer,
+            SmartReducer<
                 N,
-                ParallelSmartReducer<
-                    N,
-                    ChainReducer<N, IdentityPlaceReducer, SimpleLoopAgglomeration>,
-                >,
+                SimpleChainReducer,
+                ChainReducer<N, IdentityPlaceReducer, SourceSinkReducer>,
                 IdentityTransitionReducer,
-                SmartReducer<
-                    N,
-                    SimpleChainReducer,
-                    ChainReducer<N, IdentityPlaceReducer, SourceSinkReducer>,
-                    IdentityTransitionReducer,
-                >,
-                SourceSinkReducer,
             >,
+            SourceSinkReducer,
         >,
+        ParallelPlaceReducer,
+        ParallelTransitionReducer,
     >,
 >;
 
 type CompactStructRedundantReductions<N> = LoopReducer<
     N,
-    ChainReducer<
+    Chain7Reducer<
         N,
-        ParallelSmartReducer<
+        ParallelSmartReducer<N, ChainReducer<N, IdentityPlaceReducer, SimpleLoopAgglomeration>>,
+        IdentityTransitionReducer,
+        SmartReducer<
             N,
-            ParallelSmartReducer<
-                N,
-                Chain4Reducer<
-                    N,
-                    ParallelSmartReducer<
-                        N,
-                        ChainReducer<N, IdentityPlaceReducer, SimpleLoopAgglomeration>,
-                    >,
-                    IdentityTransitionReducer,
-                    SmartReducer<
-                        N,
-                        SimpleChainReducer,
-                        ChainReducer<N, IdentityPlaceReducer, SourceSinkReducer>,
-                        IdentityTransitionReducer,
-                    >,
-                    SourceSinkReducer,
-                >,
-            >,
+            SimpleChainReducer,
+            ChainReducer<N, IdentityPlaceReducer, SourceSinkReducer>,
+            IdentityTransitionReducer,
         >,
+        SourceSinkReducer,
+        ParallelPlaceReducer,
+        ParallelTransitionReducer,
         InvariantReducer,
     >,
 >;
