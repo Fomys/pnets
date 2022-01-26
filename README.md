@@ -46,7 +46,7 @@ The purpose of these libraries is to parse and export Petri nets to the `.pnml` 
 ## `pnets_shrink` library
 
 This library provides methods and traits to reduce Petri nets.
-It provides all rules from [STTT](https://todoref.fr) and new rules created specially to reduce some networks from Petri net contest.
+It provides all rules from [STTT](https://todoref.fr) and new rules created specially to reduce some nets from Petri net contest.
 
 ### Internals
 

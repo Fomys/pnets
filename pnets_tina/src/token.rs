@@ -21,7 +21,7 @@ pub struct Token {
 pub enum Kind {
     /// New line in original file
     NewLine,
-    /// Network `net`
+    /// Net `net`
     Net,
     /// Transition `tr`
     Transition,

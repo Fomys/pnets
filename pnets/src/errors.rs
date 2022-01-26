@@ -9,7 +9,7 @@ use crate::{arc, PlaceId, TransitionId};
 pub enum NetError {
     /// There is at least one cyclic priority (t1 > t0 > t1 for example)
     CyclicPriorities,
-    /// There is an invalid time range in the network
+    /// There is an invalid time range in the net
     InvalidTimeRange,
     /// This kind of arc is not supported in ths version of the crate
     UnsupportedArc(arc::Kind),
@@ -17,11 +17,11 @@ pub enum NetError {
     InvalidTransition(TransitionId),
     /// This place id is invalid
     InvalidPlace(PlaceId),
-    /// There is a duplicated name in the network
+    /// There is a duplicated name in the net
     DuplicatedName(String),
-    /// This identifier is not found in the network
+    /// This identifier is not found in the net
     UnknownIdentifier(String),
-    /// This network contains an invalid arc (place to place, transition to transition, ...)
+    /// This net contains an invalid arc (place to place, transition to transition, ...)
     InvalidArc,
 }
 
@@ -35,16 +35,14 @@ impl fmt::Display for NetError {
             }
             NetError::InvalidTransition(tr) => write!(f, "Invalid transition id {}", tr),
             NetError::InvalidPlace(pl) => write!(f, "Invalid place id {}", pl),
-            NetError::DuplicatedName(name) => write!(
-                f,
-                "You try to create duplicated name in the network: {}",
-                name
-            ),
+            NetError::DuplicatedName(name) => {
+                write!(f, "You try to create duplicated name in the net: {}", name)
+            }
             NetError::UnknownIdentifier(identifier) => {
-                write!(f, "Identifier {} not found in the network.", identifier)
+                write!(f, "Identifier {} not found in the net.", identifier)
             }
             NetError::InvalidArc => {
-                write!(f, "Invalid arc in the network")
+                write!(f, "Invalid arc in the net")
             }
         }
     }

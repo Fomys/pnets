@@ -28,7 +28,7 @@ impl Place {
         self.id
     }
 
-    /// Disconnect a place from the network
+    /// Disconnect a place from the net
     #[must_use]
     pub fn is_disconnected(&self) -> bool {
         self.produced_by.is_empty()

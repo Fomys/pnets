@@ -1,4 +1,4 @@
-//! Network with time support
+//! Net with time support
 //!
 //! Represent a Petri net with time support and extra arc kind such as [`arc::Kind::Test`][`crate::arc::Kind::Test`].
 

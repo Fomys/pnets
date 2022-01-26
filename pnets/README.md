@@ -21,4 +21,4 @@ In order to easily manipulate these nets this api provides the following element
 - [`Marking`](https://docs.rs/pnets/latest/pnets/struct.Marking.html) - a structure for manipulating hollow vectors;
 - [`PlaceId`](https://docs.rs/pnets/latest/pnets/struct.PlaceId.html)
   and [`TransitionId`](https://docs.rs/pnets/latest/pnets/struct.TransitionId.html) - a type for indexing places and
-  transitions in networks.
+  transitions in nets.

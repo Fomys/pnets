@@ -5,7 +5,7 @@ use crate::modifications::{Agglomeration, Modification};
 use crate::reducers::reduce::{ConservativeReduce, TransitionReduce};
 use crate::reducers::Reduce;
 
-/// Remove simple chains from the network and replace them by a unique place
+/// Remove simple chains from the net and replace them by a unique place
 ///
 /// See Definition 5, page 8 [STTT](https://doi.org/10.1007/s10009-019-00519-1)
 pub struct SimpleChainReducer;
@@ -58,7 +58,15 @@ impl TransitionReduce<Net> for SimpleChainReducer {
                 net.delete_place(pl_dest);
                 net.delete_place(pl_source);
                 net.delete_transition(tr);
-
+                println!(
+                    "SCA {:?}",
+                    Modification::Agglomeration(Agglomeration {
+                        deleted_places: vec![(pl_source, 1), (pl_dest, 1)],
+                        new_place: new_pl,
+                        constant: 0,
+                        factor: 1,
+                    })
+                );
                 modifications.push(Modification::Agglomeration(Agglomeration {
                     deleted_places: vec![(pl_source, 1), (pl_dest, 1)],
                     new_place: new_pl,

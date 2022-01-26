@@ -6,7 +6,7 @@ use newtype_derive::{
 };
 
 custom_derive! {
-    /// Represent a transition identifier in the network
+    /// Represent a transition identifier in the net
     #[derive(
          Ord, PartialOrd, Clone, Copy, Eq, PartialEq, Hash,
         NewtypeDebug, NewtypeDisplay, NewtypeAddAssign(usize), Default, NewtypeAdd(usize)
@@ -25,7 +25,7 @@ impl Idx for TransitionId {
 }
 
 custom_derive! {
-    /// Represent a place identifier in the network
+    /// Represent a place identifier in the net
     #[derive(
         Ord, PartialOrd, Clone, Copy, Eq, PartialEq, Hash,
         NewtypeDebug, NewtypeDisplay, NewtypeAddAssign(usize), Default, NewtypeAdd(usize)
@@ -55,7 +55,7 @@ impl ::std::convert::From<usize> for TransitionId {
     }
 }
 
-/// Represent an id in the network
+/// Represent an id in the net
 #[derive(Eq, PartialEq, Hash, Debug, Clone, Copy)]
 pub enum NodeId {
     /// Place

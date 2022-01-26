@@ -4,9 +4,9 @@ version = "0.1.1"
 authors = ["Louis Chauvet <louis.chauvet@free.fr>"]
 edition = "2018"
 description = "A reducer for Petri nets"
-documentation = "https://docs.rs/pnets_shrunk/"
+documentation = "https://docs.rs/pnets_shrink/"
 readme = "README.md"
-homepage = "https://github.com/fomys/pnets/tree/master/pnets_shrunk"
+homepage = "https://github.com/fomys/pnets/tree/master/pnets_shrink"
 repository = "https://github.com/fomys/pnets"
 license = "MIT OR Apache-2.0"
 keywords = ["petri", ]
@@ -24,6 +24,7 @@ quick-xml = { version = "0.21", features = [ "serialize" ] }
 pnets_pnml = { path = "../pnets_pnml", version = "0.1"}
 serde = "1.0"
 serde_json = "1.0"
+wait-timeout = "0.2"
 
 [[bin]]
 name = "shrink"

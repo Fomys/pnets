@@ -13,7 +13,7 @@ pub struct Transition {
     /// Production of the transition
     pub produce: Marking<PlaceId>,
 
-    /// This transition is disconnected from the network and only kept to avoid index problems
+    /// This transition is disconnected from the net and only kept to avoid index problems
     pub deleted: bool,
 }
 
@@ -24,7 +24,7 @@ impl Transition {
         self.id
     }
 
-    /// Returns [`true`] if this transition is disconnected from the network
+    /// Returns [`true`] if this transition is disconnected from the net
     #[must_use]
     pub fn is_disconnected(&self) -> bool {
         self.consume.is_empty() && self.produce.is_empty()

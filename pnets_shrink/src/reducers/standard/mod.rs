@@ -1,4 +1,4 @@
-//! All reductions appliable to standard network
+//! All reductions appliable to standard net
 pub use identity_place_reducer::IdentityPlaceReducer;
 pub use identity_transitions_reducer::IdentityTransitionReducer;
 pub use invariant_reducer::InvariantReducer;

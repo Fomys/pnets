@@ -1,7 +1,7 @@
 use crate::timed::TimeRange;
 use crate::{Marking, PlaceId, TransitionId};
 
-/// Represent a transition in the network
+/// Represent a transition in the net
 #[derive(Debug, Default)]
 pub struct Transition {
     pub(crate) id: TransitionId,
@@ -31,7 +31,7 @@ impl Transition {
         self.id
     }
 
-    /// Returns [`true`] if this transition is disconnected from the network
+    /// Returns [`true`] if this transition is disconnected from the net
     #[must_use]
     pub fn is_disconnected(&self) -> bool {
         self.produce.is_empty()

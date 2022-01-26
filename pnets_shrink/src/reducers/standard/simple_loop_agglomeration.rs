@@ -14,7 +14,7 @@ struct SimpleLoopAgglomerationGraphNode {
     in_stack: bool,
 }
 
-#[derive(Default)]
+#[derive(Default, Debug)]
 struct Partition {
     transitions: Vec<TransitionId>,
     places: Vec<PlaceId>,
@@ -33,7 +33,7 @@ impl Partition {
     }
 }
 
-/// Implementation of the Tarjan algorithm on petri network
+/// Implementation of the Tarjan algorithm on petri net
 ///
 /// We apply this algorithm on the graph formed by all transition which has only one consumption and
 /// one production (those transitions correspond to those found in the SLA reduction)
@@ -134,7 +134,7 @@ impl SimpleLoopAgglomerationGraph {
     }
 }
 
-/// Remove simple loopd from the network and replace them by a unique place
+/// Remove simple loopd from the net and replace them by a unique place
 ///
 /// See Definition 6, page 8 [STTT](https://doi.org/10.1007/s10009-019-00519-1)
 pub struct SimpleLoopAgglomeration;
@@ -148,7 +148,7 @@ impl Reduce<Net> for SimpleLoopAgglomeration {
         graph.compute_partitions(net);
 
         // Each partition can be replaced with a new agglomerated place
-        for partition in &graph.partitions {
+        'partitions: for partition in &graph.partitions {
             let new_place = net.create_place();
             // Copy all arcs and merge initial marking in the new place
             let mut arcs = vec![];
@@ -156,6 +156,11 @@ impl Reduce<Net> for SimpleLoopAgglomeration {
             for &pl in &partition.places {
                 arcs.extend(net[pl].get_arcs());
                 initial += net[pl].initial;
+                if net[pl].deleted {
+                    continue 'partitions;
+                }
+            }
+            for &pl in &partition.places {
                 net.delete_place(pl);
             }
             net[new_place].initial = initial;
@@ -170,6 +175,16 @@ impl Reduce<Net> for SimpleLoopAgglomeration {
                     _ => {}
                 }
             }
+            println!("Partition {:?}", partition);
+            println!(
+                "SLA {:?}",
+                Modification::Agglomeration(Agglomeration {
+                    deleted_places: partition.places.iter().map(|pl| (*pl, 1)).collect(),
+                    new_place,
+                    constant: 0,
+                    factor: 1,
+                })
+            );
             modifications.push(Modification::Agglomeration(Agglomeration {
                 deleted_places: partition.places.iter().map(|pl| (*pl, 1)).collect(),
                 new_place,

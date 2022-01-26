@@ -209,21 +209,17 @@ type CompactStructExtraReductions<N> = LoopReducer<
 
 type CompactRedundantReductions<N> = LoopReducer<
     N,
-    Chain3Reducer<
+    Chain5Reducer<
         N,
-        Chain4Reducer<
+        ParallelSmartReducer<N, ChainReducer<N, IdentityPlaceReducer, SimpleLoopAgglomeration>>,
+        SmartReducer<
             N,
-            ParallelSmartReducer<N, ChainReducer<N, IdentityPlaceReducer, SimpleLoopAgglomeration>>,
+            SimpleChainReducer,
+            ChainReducer<N, IdentityPlaceReducer, SourceSinkReducer>,
             IdentityTransitionReducer,
-            SmartReducer<
-                N,
-                SimpleChainReducer,
-                ChainReducer<N, IdentityPlaceReducer, SourceSinkReducer>,
-                IdentityTransitionReducer,
-            >,
-            SourceSinkReducer,
         >,
-        ParallelPlaceReducer,
+        SourceSinkReducer,
+        ParallelPlaceReducer, //
         ParallelTransitionReducer,
     >,
 >;
@@ -260,10 +256,10 @@ struct Args {
     #[clap(short, long, default_value_t=Format::Guess)]
     #[clap(arg_enum)]
     format: Format,
-    /// Print equation with the network
+    /// Print equations
     #[clap(short, long)]
     equations: bool,
-    /// Remove all disconnected transitions and useless places from the network after reductions
+    /// Remove all disconnected transitions and useless places from the net after reductions
     #[clap(long)]
     clean: bool,
     #[clap(long)]
@@ -365,7 +361,7 @@ fn write_output(
     modifications: &[Modification],
     args: Args,
 ) -> Result<(), Box<dyn Error>> {
-    info!("Start writing new network.");
+    info!("Start writing new net.");
     let now = SystemTime::now();
     let mut buf_writer: Box<dyn Write> = match args.output.as_ref() {
         "-" => Box::new(stdout()),
@@ -391,6 +387,7 @@ fn write_modifications(
 ) -> Result<(), Box<dyn Error>> {
     writer.write_all("# generated equations\n".as_ref())?;
     for modification in modifications {
+        println!("{:?}", modification);
         match modification {
             Modification::Agglomeration(agg) => {
                 if agg.factor == 1 {
@@ -441,9 +438,6 @@ fn write_modifications(
             }
             Modification::Reduction(red) => {
                 writer.write_all(b"# R |- ")?;
-                if red.constant != 0 {
-                    writer.write_all(format!("{} + ", red.constant).as_ref())?;
-                }
                 for i in 0..red.deleted_places.len() {
                     let (pl, w) = red.deleted_places[i];
                     if w == 1 {
@@ -488,6 +482,12 @@ fn write_modifications(
                             .as_ref(),
                         )?;
                     }
+                }
+                if red.constant != 0 {
+                    if !red.equals_to.is_empty() {
+                        writer.write_all(" + ".as_ref())?;
+                    }
+                    writer.write_all(format!("{}", red.constant).as_ref())?;
                 }
                 writer.write_all(b"\n")?;
             }

@@ -114,7 +114,7 @@ pub struct Fill {
     pub gradient_color: Option<Color>,
     #[serde(rename = "gradient-rotation")]
     pub gradient_rotation: Option<Rotation>,
-    pub image: String,
+    pub image: Option<String>,
 }
 
 #[derive(Deserialize)]

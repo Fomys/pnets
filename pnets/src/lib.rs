@@ -12,7 +12,7 @@
 //! In order to easily manipulate these nets this api provides the following elements:
 //! - [`arc::Kind`] - an enum of the different types of arcs that exist in a Petri net;
 //! - [`Marking`] - a structure for manipulating hollow vectors;
-//! - [`PlaceId`] and [`TransitionId`] - a type for indexing places and transitions in networks.
+//! - [`PlaceId`] and [`TransitionId`] - a type for indexing places and transitions in nets.
 //!
 pub use errors::NetError;
 pub use marking::Marking;

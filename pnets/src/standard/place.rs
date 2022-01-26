@@ -15,7 +15,7 @@ pub struct Place {
     /// Transitions that consume this place
     pub consumed_by: Marking<TransitionId>,
 
-    /// This place is disconnected from the network and only kept to avoid index problems
+    /// This place is disconnected from the net and only kept to avoid index problems
     pub deleted: bool,
 }
 
@@ -26,7 +26,7 @@ impl Place {
         self.id
     }
 
-    /// Returns [`true`] if this place is disconnected from the network
+    /// Returns [`true`] if this place is disconnected from the net
     #[must_use]
     pub fn is_disconnected(&self) -> bool {
         self.produced_by.is_empty() && self.consumed_by.is_empty()

@@ -13,19 +13,19 @@ use bimap::BiMap;
 /// This structure is indexed with [`PlaceId`] and [`TransitionId`] to allow easy access to places
 /// and transitions.
 ///
-/// As this kind of network is a superset of standard Petri net, we can create one from standard
+/// As this kind of net is a superset of standard Petri net, we can create one from standard
 /// Petri net without loosing any informations.
 #[derive(Debug, Default)]
 pub struct Net {
-    /// Name of this network
+    /// Name of this net
     pub name: String,
     /// BiHashmap to get id from index and index from id
     id_index_map: BiMap<String, NodeId>,
     /// Prefix for new places and transitions
     automatic_prefix: String,
-    /// Transitions of the network
+    /// Transitions of the net
     pub transitions: IndexVec<TransitionId, Transition>,
-    /// Places of the network
+    /// Places of the net
     pub places: IndexVec<PlaceId, Place>,
 }
 
@@ -59,7 +59,7 @@ impl IndexMut<PlaceId> for Net {
 
 impl From<&standard::Net> for Net {
     fn from(standard: &standard::Net) -> Self {
-        // Crate a new network
+        // Crate a new net
         let mut net = Net {
             name: standard.name.clone(),
             ..Net::default()
@@ -156,7 +156,7 @@ impl Net {
         }
     }
 
-    /// Add an arc in the network. This kind of network support only [`arc::Kind::Consume`],
+    /// Add an arc in the net. This kind of net support only [`arc::Kind::Consume`],
     /// [`arc::Kind::Produce`], [`arc::Kind::Inhibitor`] and [`arc::Kind::Test`] arcs.
     ///
     /// # Errors
@@ -187,7 +187,7 @@ impl Net {
         }
     }
 
-    /// Disconnect a place in the network
+    /// Disconnect a place in the net
     ///
     /// The place is not really deleted to avoid memory relocation and extra information about
     /// this place such as name can be useful later.
@@ -210,7 +210,7 @@ impl Net {
         self.places[place].produced_by.clear();
     }
 
-    /// Disconnect a transition in the network
+    /// Disconnect a transition in the net
     ///
     /// The transition is not really deleted to avoid memory relocation and extra information about
     /// this transitions such as name can be useful later.
@@ -237,7 +237,7 @@ impl Net {
         self.transitions[transition].conditions.clear();
     }
 
-    /// Add a priority relation in the network
+    /// Add a priority relation in the net
     pub fn add_priority(&mut self, tr_index: TransitionId, over: TransitionId) {
         match self.transitions[tr_index].priorities.binary_search(&over) {
             Ok(_) => {} // element already in vector @ `pos`
@@ -248,7 +248,7 @@ impl Net {
     /// Update all priorities to make a transitive closure
     ///
     /// # Errors
-    /// `NetError::CyclicPriorities` is returned if there is a cyclic priority in the network
+    /// `NetError::CyclicPriorities` is returned if there is a cyclic priority in the net
     pub fn update_priorities(&mut self) -> Result<(), Box<dyn Error>> {
         let mut done = IndexVec::<TransitionId, bool>::default();
         for tr in self.transitions.iter() {

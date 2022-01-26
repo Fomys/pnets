@@ -3,7 +3,7 @@
 //!
 //! # Modifications
 //!
-//! This module exposes all modifications that can be done on the network
+//! This module exposes all modifications that can be done on the net
 //!
 //! # Reducers
 //!

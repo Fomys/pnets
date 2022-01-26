@@ -4,7 +4,7 @@ use crate::modifications::Modification;
 use crate::reducers::reduce::{ConservativeReduce, PlaceReduce, TransitionReduce};
 use crate::reducers::Reduce;
 
-/// Identity reducer does nothing on the network
+/// Identity reducer does nothing on the net
 ///
 /// This reduction exists only to be able to easily test reduction chains or replace required parameters in others.
 pub struct IdentityReducer {}

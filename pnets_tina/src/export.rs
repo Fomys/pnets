@@ -48,7 +48,7 @@ impl<'w> ExporterBuilder<'w> {
 
 /// Exporter for [tina]() format.
 ///
-/// It consume a network ([`pnets::timed::Net`]) and it write its
+/// It consume a net ([`pnets::timed::Net`]) and it write its
 /// representation in the writer.
 pub struct Exporter<'w> {
     writer: &'w mut dyn Write,

@@ -38,7 +38,7 @@ fn main() -> Result<(), Box<dyn Error>> {
         .parse()?,
     };
 
-    println!("Print petri network: {}", net.name);
+    println!("Print petri net: {}", net.name);
     println!(
         "There is {} places and {} transitions.",
         net.places.len(),

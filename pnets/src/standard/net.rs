@@ -12,20 +12,20 @@ use bimap::BiMap;
 /// This structure is indexed with [`PlaceId`] and [`TransitionId`] to allow easy access to places
 /// and transitions.
 ///
-/// As this kind of network is a subset of timed Petri net, so we can create one from timed Petri
+/// As this kind of net is a subset of timed Petri net, so we can create one from timed Petri
 /// net (but you loose [`arc::Kind::Inhibitor`], [`arc::Kind::StopWatch`] and
 /// [`arc::Kind::StopWatchInhibitor`] arcs and timings).
 #[derive(Default, Debug, Clone)]
 pub struct Net {
-    /// Name of this network
+    /// Name of this net
     pub name: String,
     /// BiHashmap to get id from index and index from id
     pub(crate) id_index_map: BiMap<String, NodeId>,
     /// Automatic prefix for new places and transitions
     automatic_prefix: String,
-    /// Transitions of the network
+    /// Transitions of the net
     pub transitions: IndexVec<TransitionId, Transition>,
-    /// Places of the network
+    /// Places of the net
     pub places: IndexVec<PlaceId, Place>,
 }
 
@@ -59,7 +59,7 @@ impl IndexMut<PlaceId> for Net {
 
 impl From<timed::Net> for Net {
     fn from(timed: timed::Net) -> Self {
-        // Crate a new network
+        // Crate a new net
         let mut net = Net {
             name: timed.name.clone(),
             ..Net::default()
@@ -101,7 +101,7 @@ impl From<timed::Net> for Net {
 }
 
 impl Net {
-    /// Create a place in the network without name and return its index
+    /// Create a place in the net without name and return its index
     pub fn create_place(&mut self) -> PlaceId {
         self.places.push(Place {
             id: PlaceId::from(self.places.len()),
@@ -114,7 +114,7 @@ impl Net {
         self.places.last_idx().unwrap()
     }
 
-    /// Create a transition in the network without name and return its index
+    /// Create a transition in the net without name and return its index
     pub fn create_transition(&mut self) -> TransitionId {
         self.transitions.push(Transition {
             id: TransitionId::from(self.transitions.len()),
@@ -152,7 +152,7 @@ impl Net {
         }
     }
 
-    /// Add an arc in the network. This kind of network support only [`arc::Kind::Consume`] and
+    /// Add an arc in the net. This kind of net support only [`arc::Kind::Consume`] and
     /// [`arc::Kind::Produce`] arcs.
     ///
     /// # Errors
@@ -173,7 +173,7 @@ impl Net {
         }
     }
 
-    /// Disconnect a place in the network
+    /// Disconnect a place in the net
     ///
     /// The place is not really deleted to avoid memory relocation and extra information about
     /// this place such as name can be useful later.
@@ -189,7 +189,7 @@ impl Net {
         self.places[place].deleted = true;
     }
 
-    /// Disconnect a transition in the network
+    /// Disconnect a transition in the net
     ///
     /// The transition is not really deleted to avoid memory relocation and extra information about
     /// this transitions such as name can be useful later.
@@ -229,10 +229,10 @@ impl Net {
         new_pl
     }
 
-    /// Create a new network without all disconected nodes and without labels to avoid extra memory
+    /// Create a new net without all disconected nodes and without labels to avoid extra memory
     /// consumption.
     ///
-    /// It returns a new network and the mapping between old indexes and new indexes.
+    /// It returns a new net and the mapping between old indexes and new indexes.
     #[must_use]
     pub fn new_without_disconnected(
         &self,

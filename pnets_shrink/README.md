@@ -1,10 +1,10 @@
-# PNETS shrunk
+# PNETS shrink
 
-**PNETS shrunk is a library which reduce Petri nets according while
-keeping some properties on the network**
+**PNETS shrink is a library which reduce Petri nets according while
+keeping some properties on the net**
 
-- [crates.io](https://crates.io/crates/pnets_shrunk)
-- [docs.rs](https://docs.rs/pnets_shrunk)
+- [crates.io](https://crates.io/crates/pnets_shrink)
+- [docs.rs](https://docs.rs/pnets_shrink)
 ---
 
 This crate provides an api for creating reductions on Petri nets and integrating some of the reductions described in the
@@ -17,7 +17,7 @@ This crate provides two modules:
 - Management of reduction algorithms using [reducers].
 
 The [modifications] module gathers the different modifications that
-can be made to a network while preserving certain properties.
+can be made to a net while preserving certain properties.
 
 The [reducers] module provides three features: [Reduce],
 [PlaceReduce] and [TransitionReduce] which allow all reduction
@@ -34,7 +34,7 @@ standard Petri nets within the [reductions::standard] module.
 
 ```rust
 use pnets::standard::Net;
-use pnets_shrunk::reducers::standard::SimpleChainReducer;
+use pnets_shrink::reducers::standard::SimpleChainReducer;
 
 fn main() {
     // Load a standard Petri net from stdin
@@ -49,7 +49,7 @@ fn main() {
     
     // Display modifications
     println!("{:?}", modifications);
-    // Display new network on stdout
+    // Display new net on stdout
     ExporterBuilder::new(file)
         .build()
         .export(net)?;
@@ -57,13 +57,13 @@ fn main() {
 ```
 
 
-[modifications]: https://docs.rs/pnets_shrunk/latest/pnets_shrunk/modifications/index.html
-[reducers]: https://docs.rs/pnets_shrunk/latest/pnets_shrunk/reducers/index.html
-[Reduce]: https://docs.rs/pnets_shrunk/latest/pnets_shrunk/reducers/trait.Reduce.html
-[PlaceReduce]: https://docs.rs/pnets_shrunk/latest/pnets_shrunk/reducers/trait.PlaceReduce.html
-[TransitionReduce]: https://docs.rs/pnets_shrunk/latest/pnets_shrunk/reducers/trait.TransitionReduce.html
-[IdentityReducer]: https://docs.rs/pnets_shrunk/latest/pnets_shrunk/reducers/struct.IdentityReducer.html
-[LoopReducer]: https://docs.rs/pnets_shrunk/latest/pnets_shrunk/reducers/struct.LoopReducer.html
-[SmartReducer]: https://docs.rs/pnets_shrunk/latest/pnets_shrunk/reducers/struct.SmartReducer.html
-[ChainReducer]: https://docs.rs/pnets_shrunk/latest/pnets_shrunk/reducers/struct.ChainReducer.html
-[reductions::standard]: https://docs.rs/pnets_shrunk/latest/pnets_shrunk/reducers/standard/index.html
+[modifications]: https://docs.rs/pnets_shrink/latest/pnets_shrink/modifications/index.html
+[reducers]: https://docs.rs/pnets_shrink/latest/pnets_shrink/reducers/index.html
+[Reduce]: https://docs.rs/pnets_shrink/latest/pnets_shrink/reducers/trait.Reduce.html
+[PlaceReduce]: https://docs.rs/pnets_shrink/latest/pnets_shrink/reducers/trait.PlaceReduce.html
+[TransitionReduce]: https://docs.rs/pnets_shrink/latest/pnets_shrink/reducers/trait.TransitionReduce.html
+[IdentityReducer]: https://docs.rs/pnets_shrink/latest/pnets_shrink/reducers/struct.IdentityReducer.html
+[LoopReducer]: https://docs.rs/pnets_shrink/latest/pnets_shrink/reducers/struct.LoopReducer.html
+[SmartReducer]: https://docs.rs/pnets_shrink/latest/pnets_shrink/reducers/struct.SmartReducer.html
+[ChainReducer]: https://docs.rs/pnets_shrink/latest/pnets_shrink/reducers/struct.ChainReducer.html
+[reductions::standard]: https://docs.rs/pnets_shrink/latest/pnets_shrink/reducers/standard/index.html

@@ -5,7 +5,7 @@ use crate::modifications::{Modification, TransitionElimination};
 use crate::reducers::reduce::{ConservativeReduce, TransitionReduce};
 use crate::reducers::Reduce;
 
-/// Removes identity transitions, which doesn't have an effect on the network
+/// Removes identity transitions, which doesn't have an effect on the net
 ///
 /// See Definition 1, page 5 [STTT](https://doi.org/10.1007/s10009-019-00519-1)
 pub struct IdentityTransitionReducer;

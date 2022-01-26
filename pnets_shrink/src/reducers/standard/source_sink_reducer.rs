@@ -5,7 +5,7 @@ use crate::modifications::{InequalityReduction, Modification};
 use crate::reducers::reduce::{ConservativeReduce, PlaceReduce};
 use crate::reducers::Reduce;
 
-/// Removes the pattern "pl -> tr" from the network (pl and tr don't has other connection)
+/// Removes the pattern "pl -> tr" from the net (pl and tr don't has other connection)
 ///
 /// See definition 10, page 12 [STTT](https://doi.org/10.1007/s10009-019-00519-1)
 pub struct SourceSinkReducer;
