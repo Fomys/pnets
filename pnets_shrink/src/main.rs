@@ -387,7 +387,7 @@ fn write_modifications(
 ) -> Result<(), Box<dyn Error>> {
     writer.write_all("# generated equations\n".as_ref())?;
     for modification in modifications {
-        println!("{:?}", modification);
+        //println!("{:?}", modification);
         match modification {
             Modification::Agglomeration(agg) => {
                 if agg.factor == 1 {

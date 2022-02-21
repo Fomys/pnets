@@ -87,8 +87,8 @@ impl SimpleLoopAgglomerationGraph {
         for &tr in place.consumed_by.iter().filter_map(|(tr, _)| {
             if net[*tr].consume.len() == 1
                 && net[*tr].produce.len() == 1
-                && (source_transition.consume.iter().next().unwrap().1 == 1)
-                && (source_transition.produce.iter().next().unwrap().1 == 1)
+                && (net[*tr].consume.iter().next().unwrap().1 == 1)
+                && (net[*tr].produce.iter().next().unwrap().1 == 1)
             {
                 Some(tr)
             } else {
@@ -111,9 +111,12 @@ impl SimpleLoopAgglomerationGraph {
             }
         }
 
-        if self.nodes[source_tr].accessible_num == self.nodes[source_tr].num {
+        if self.nodes[source_tr].accessible_num.is_some()
+            && self.nodes[source_tr].accessible_num == self.nodes[source_tr].num
+        {
             let mut component = Partition::default();
             while let Some((tr, pl)) = self.stack.pop() {
+                self.nodes[tr].in_stack = false;
                 component.add(tr, pl);
                 if tr == source_tr {
                     break;
