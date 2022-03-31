@@ -8,18 +8,25 @@ use crate::reducers::Reduce;
 /// Replaces a place that has an initial marking equal to all the weights of the related arcs
 pub struct WeightSimplification;
 
+impl WeightSimplification {
+    /// Create a new Weight simplification reducer
+    pub fn new() -> Self {
+        Self {}
+    }
+}
+
 impl ConservativeReduce<Net> for WeightSimplification {}
 
 impl Reduce<Net> for WeightSimplification {
-    fn reduce(net: &mut Net, modifications: &mut Vec<Modification>) {
+    fn reduce(&self, net: &mut Net, modifications: &mut Vec<Modification>) {
         for tr in (0..net.places.len()).map(|v| PlaceId::from(v)) {
-            Self::place_reduce(net, tr, modifications);
+            self.place_reduce(net, tr, modifications);
         }
     }
 }
 
 impl PlaceReduce<Net> for WeightSimplification {
-    fn place_reduce(net: &mut Net, pl: PlaceId, modifications: &mut Vec<Modification>) {
+    fn place_reduce(&self, net: &mut Net, pl: PlaceId, modifications: &mut Vec<Modification>) {
         // Check if the place have an initial marking greater than 1 and all its arc with the weight
         // of its initial marking
         if !net[pl].deleted

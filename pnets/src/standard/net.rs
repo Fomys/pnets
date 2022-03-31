@@ -5,7 +5,7 @@ use indexed_vec::IndexVec;
 use crate::net::NodeId;
 use crate::standard::{Place, Transition};
 use crate::{arc, timed, NetError, PlaceId, TransitionId};
-use bimap::BiMap;
+use bimap::{BiHashMap, BiMap};
 
 /// Standard Petri net, with only produce and consume arcs
 ///
@@ -27,6 +27,102 @@ pub struct Net {
     pub transitions: IndexVec<TransitionId, Transition>,
     /// Places of the net
     pub places: IndexVec<PlaceId, Place>,
+}
+
+impl PartialEq for Net {
+    fn eq(&self, other: &Self) -> bool {
+        let mut id_map: BiHashMap<NodeId, NodeId> = BiHashMap::new();
+        for (name, id) in &self.id_index_map {
+            let other_id = other.get_index_by_name(&name);
+            if let Some(o_id) = other_id {
+                id_map.insert(*id, o_id);
+            } else {
+                return false;
+            }
+        }
+        for transition in &self.transitions {
+            let other_transition = &other[id_map
+                .get_by_left(&NodeId::Transition(transition.id))
+                .unwrap()
+                .as_transition()
+                .unwrap()];
+            if other_transition.deleted != transition.deleted
+                || other_transition.label != transition.label
+            {
+                return false;
+            }
+            for (other_pl, w) in transition.consume.iter().map(|(pl, w)| {
+                (
+                    id_map
+                        .get_by_left(&NodeId::Place(*pl))
+                        .unwrap()
+                        .as_place()
+                        .unwrap(),
+                    *w,
+                )
+            }) {
+                if other_transition.consume[other_pl] != w {
+                    return false;
+                }
+            }
+            for (other_pl, w) in transition.produce.iter().map(|(pl, w)| {
+                (
+                    id_map
+                        .get_by_left(&NodeId::Place(*pl))
+                        .unwrap()
+                        .as_place()
+                        .unwrap(),
+                    *w,
+                )
+            }) {
+                if other_transition.produce[other_pl] != w {
+                    return false;
+                }
+            }
+        }
+        for place in &self.places {
+            let other_place = &other[id_map
+                .get_by_left(&NodeId::Place(place.id))
+                .unwrap()
+                .as_place()
+                .unwrap()];
+            if other_place.deleted != place.deleted
+                || other_place.label != place.label
+                || other_place.initial != place.initial
+            {
+                return false;
+            }
+            for (other_tr, w) in place.consumed_by.iter().map(|(tr, w)| {
+                (
+                    id_map
+                        .get_by_left(&NodeId::Transition(*tr))
+                        .unwrap()
+                        .as_transition()
+                        .unwrap(),
+                    *w,
+                )
+            }) {
+                if other_place.consumed_by[other_tr] != w {
+                    return false;
+                }
+            }
+            for (other_tr, w) in place.produced_by.iter().map(|(tr, w)| {
+                (
+                    id_map
+                        .get_by_left(&NodeId::Transition(*tr))
+                        .unwrap()
+                        .as_transition()
+                        .unwrap(),
+                    *w,
+                )
+            }) {
+                if other_place.produced_by[other_tr] != w {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
 }
 
 impl Index<TransitionId> for Net {

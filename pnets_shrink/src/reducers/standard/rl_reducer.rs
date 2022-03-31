@@ -12,8 +12,15 @@ use crate::reducers::Reduce;
 /// Réduit les "feuilles" présentes sur le modèle viral epidemic
 pub struct RLReducer;
 
+impl RLReducer {
+    /// Create a new RL reducer
+    pub fn new() -> Self {
+        Self {}
+    }
+}
+
 impl Reduce<Net> for RLReducer {
-    fn reduce(net: &mut Net, modifications: &mut Vec<Modification>) {
+    fn reduce(&self, net: &mut Net, modifications: &mut Vec<Modification>) {
         'original_transition: for tr in (0..net.transitions.len()).map(|i| TransitionId::from(i)) {
             // Recherche d'une place de type "production" pour pouvoir faire la suite des vérifications
             let produce_place = {

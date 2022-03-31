@@ -10,20 +10,32 @@ use crate::reducers::Reduce;
 /// See Definition 5, page 8 [STTT](https://doi.org/10.1007/s10009-019-00519-1)
 pub struct SimpleChainReducer;
 
+impl SimpleChainReducer {
+    /// Create a new simple chain reducer
+    pub fn new() -> Self {
+        Self {}
+    }
+}
+
 impl ConservativeReduce<Net> for SimpleChainReducer {}
 
 impl Reduce<Net> for SimpleChainReducer {
-    fn reduce(net: &mut Net, modifications: &mut Vec<Modification>) {
+    fn reduce(&self, net: &mut Net, modifications: &mut Vec<Modification>) {
         if !net.transitions.is_empty() {
             for tr in (0..net.transitions.len()).map(|v| TransitionId::from(v)) {
-                Self::transition_reduce(net, tr, modifications);
+                self.transition_reduce(net, tr, modifications);
             }
         }
     }
 }
 
 impl TransitionReduce<Net> for SimpleChainReducer {
-    fn transition_reduce(net: &mut Net, tr: TransitionId, modifications: &mut Vec<Modification>) {
+    fn transition_reduce(
+        &self,
+        net: &mut Net,
+        tr: TransitionId,
+        modifications: &mut Vec<Modification>,
+    ) {
         // We search simple chain agglomeration by searching the middle transition, which has only
         // one consumption and one production.
         if !net[tr].deleted && net[tr].produce.len() == 1 && net[tr].consume.len() == 1 {
@@ -58,15 +70,7 @@ impl TransitionReduce<Net> for SimpleChainReducer {
                 net.delete_place(pl_dest);
                 net.delete_place(pl_source);
                 net.delete_transition(tr);
-                println!(
-                    "SCA {:?}",
-                    Modification::Agglomeration(Agglomeration {
-                        deleted_places: vec![(pl_source, 1), (pl_dest, 1)],
-                        new_place: new_pl,
-                        constant: 0,
-                        factor: 1,
-                    })
-                );
+
                 modifications.push(Modification::Agglomeration(Agglomeration {
                     deleted_places: vec![(pl_source, 1), (pl_dest, 1)],
                     new_place: new_pl,

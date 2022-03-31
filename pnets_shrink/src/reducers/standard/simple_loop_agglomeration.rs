@@ -142,10 +142,17 @@ impl SimpleLoopAgglomerationGraph {
 /// See Definition 6, page 8 [STTT](https://doi.org/10.1007/s10009-019-00519-1)
 pub struct SimpleLoopAgglomeration;
 
+impl SimpleLoopAgglomeration {
+    /// Create a new simple loop agglomeration reducer
+    pub fn new() -> Self {
+        Self {}
+    }
+}
+
 impl ConservativeReduce<Net> for SimpleLoopAgglomeration {}
 
 impl Reduce<Net> for SimpleLoopAgglomeration {
-    fn reduce(net: &mut Net, modifications: &mut Vec<Modification>) {
+    fn reduce(&self, net: &mut Net, modifications: &mut Vec<Modification>) {
         // Compute partitions of the transition graph
         let mut graph = SimpleLoopAgglomerationGraph::new(net.transitions.len());
         graph.compute_partitions(net);
@@ -178,16 +185,6 @@ impl Reduce<Net> for SimpleLoopAgglomeration {
                     _ => {}
                 }
             }
-            println!("Partition {:?}", partition);
-            println!(
-                "SLA {:?}",
-                Modification::Agglomeration(Agglomeration {
-                    deleted_places: partition.places.iter().map(|pl| (*pl, 1)).collect(),
-                    new_place,
-                    constant: 0,
-                    factor: 1,
-                })
-            );
             modifications.push(Modification::Agglomeration(Agglomeration {
                 deleted_places: partition.places.iter().map(|pl| (*pl, 1)).collect(),
                 new_place,

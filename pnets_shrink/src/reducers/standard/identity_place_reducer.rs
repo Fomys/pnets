@@ -10,18 +10,25 @@ use crate::reducers::Reduce;
 /// See Definition 2, page 5 [STTT](https://doi.org/10.1007/s10009-019-00519-1)
 pub struct IdentityPlaceReducer;
 
+impl IdentityPlaceReducer {
+    /// New identity place reducer
+    pub fn new() -> Self {
+        Self {}
+    }
+}
+
 impl ConservativeReduce<Net> for IdentityPlaceReducer {}
 
 impl Reduce<Net> for IdentityPlaceReducer {
-    fn reduce(net: &mut Net, modifications: &mut Vec<Modification>) {
+    fn reduce(&self, net: &mut Net, modifications: &mut Vec<Modification>) {
         for pl in (0..net.places.len()).map(|v| PlaceId::from(v)) {
-            Self::place_reduce(net, pl, modifications);
+            self.place_reduce(net, pl, modifications);
         }
     }
 }
 
 impl PlaceReduce<Net> for IdentityPlaceReducer {
-    fn place_reduce(net: &mut Net, pl: PlaceId, modifications: &mut Vec<Modification>) {
+    fn place_reduce(&self, net: &mut Net, pl: PlaceId, modifications: &mut Vec<Modification>) {
         // Search all places which has same consumers and producers
         if !net[pl].deleted
             && net[pl]

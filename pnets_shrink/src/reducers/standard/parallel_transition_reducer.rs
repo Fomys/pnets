@@ -10,18 +10,30 @@ use crate::reducers::Reduce;
 /// See Definition 1, page 5 [STTT](https://doi.org/10.1007/s10009-019-00519-1)
 pub struct ParallelTransitionReducer;
 
+impl ParallelTransitionReducer {
+    /// Create a new parallel transition reducer
+    pub fn new() -> Self {
+        Self {}
+    }
+}
+
 impl ConservativeReduce<Net> for ParallelTransitionReducer {}
 
 impl Reduce<Net> for ParallelTransitionReducer {
-    fn reduce(net: &mut Net, modifications: &mut Vec<Modification>) {
+    fn reduce(&self, net: &mut Net, modifications: &mut Vec<Modification>) {
         for tr in (0..net.transitions.len()).map(|tr| TransitionId::from(tr)) {
-            Self::transition_reduce(net, tr, modifications);
+            self.transition_reduce(net, tr, modifications);
         }
     }
 }
 
 impl TransitionReduce<Net> for ParallelTransitionReducer {
-    fn transition_reduce(net: &mut Net, tr_1: TransitionId, modifications: &mut Vec<Modification>) {
+    fn transition_reduce(
+        &self,
+        net: &mut Net,
+        tr_1: TransitionId,
+        modifications: &mut Vec<Modification>,
+    ) {
         if !net[tr_1].deleted {
             let mut transitions_to_delete = vec![];
             // Iterate over all connected transition for this transition

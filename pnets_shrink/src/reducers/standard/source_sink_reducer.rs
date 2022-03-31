@@ -10,18 +10,25 @@ use crate::reducers::Reduce;
 /// See definition 10, page 12 [STTT](https://doi.org/10.1007/s10009-019-00519-1)
 pub struct SourceSinkReducer;
 
+impl SourceSinkReducer {
+    /// Create new source sink reducer
+    pub fn new() -> Self {
+        Self {}
+    }
+}
+
 impl ConservativeReduce<Net> for SourceSinkReducer {}
 
 impl Reduce<Net> for SourceSinkReducer {
-    fn reduce(net: &mut Net, modifications: &mut Vec<Modification>) {
+    fn reduce(&self, net: &mut Net, modifications: &mut Vec<Modification>) {
         for tr in (0..net.places.len()).map(|v| PlaceId::from(v)) {
-            Self::place_reduce(net, tr, modifications);
+            self.place_reduce(net, tr, modifications);
         }
     }
 }
 
 impl PlaceReduce<Net> for SourceSinkReducer {
-    fn place_reduce(net: &mut Net, pl: PlaceId, modifications: &mut Vec<Modification>) {
+    fn place_reduce(&self, net: &mut Net, pl: PlaceId, modifications: &mut Vec<Modification>) {
         // We check that the place is connected to only one transition
         if !net[pl].deleted && net[pl].produced_by.is_empty() && net[pl].consumed_by.len() == 1 {
             let &(tr, _) = net[pl].consumed_by.iter().next().unwrap();

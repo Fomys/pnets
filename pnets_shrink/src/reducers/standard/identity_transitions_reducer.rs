@@ -10,20 +10,32 @@ use crate::reducers::Reduce;
 /// See Definition 1, page 5 [STTT](https://doi.org/10.1007/s10009-019-00519-1)
 pub struct IdentityTransitionReducer;
 
+impl IdentityTransitionReducer {
+    /// New identity transition reducer
+    pub fn new() -> Self {
+        Self {}
+    }
+}
+
 impl ConservativeReduce<Net> for IdentityTransitionReducer {}
 
 impl Reduce<Net> for IdentityTransitionReducer {
-    fn reduce(net: &mut Net, modifications: &mut Vec<Modification>) {
+    fn reduce(&self, net: &mut Net, modifications: &mut Vec<Modification>) {
         if !net.transitions.is_empty() {
             for tr in (0..net.transitions.len()).map(|v| TransitionId::from(v)) {
-                Self::transition_reduce(net, tr, modifications);
+                self.transition_reduce(net, tr, modifications);
             }
         }
     }
 }
 
 impl TransitionReduce<Net> for IdentityTransitionReducer {
-    fn transition_reduce(net: &mut Net, tr: TransitionId, modifications: &mut Vec<Modification>) {
+    fn transition_reduce(
+        &self,
+        net: &mut Net,
+        tr: TransitionId,
+        modifications: &mut Vec<Modification>,
+    ) {
         // Search all transition which has the same consumption and the same production
         if !net[tr].is_disconnected()
             && net[tr]

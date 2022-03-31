@@ -10,18 +10,25 @@ use crate::reducers::Reduce;
 /// See Definition 2, page 5 [STTT](https://doi.org/10.1007/s10009-019-00519-1)
 pub struct ParallelPlaceReducer;
 
+impl ParallelPlaceReducer {
+    /// Create a new parallel place reducer
+    pub fn new() -> Self {
+        Self {}
+    }
+}
+
 impl ConservativeReduce<Net> for ParallelPlaceReducer {}
 
 impl Reduce<Net> for ParallelPlaceReducer {
-    fn reduce(net: &mut Net, modifications: &mut Vec<Modification>) {
+    fn reduce(&self, net: &mut Net, modifications: &mut Vec<Modification>) {
         for pl in (0..net.places.len()).map(|pl| PlaceId::from(pl)) {
-            Self::place_reduce(net, pl, modifications);
+            self.place_reduce(net, pl, modifications);
         }
     }
 }
 
 impl PlaceReduce<Net> for ParallelPlaceReducer {
-    fn place_reduce(net: &mut Net, pl_1: PlaceId, modifications: &mut Vec<Modification>) {
+    fn place_reduce(&self, net: &mut Net, pl_1: PlaceId, modifications: &mut Vec<Modification>) {
         if !net[pl_1].deleted {
             let mut places_to_delete = vec![];
             // Iterate over all connected transition for this place

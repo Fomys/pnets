@@ -1,4 +1,4 @@
-#![forbid(missing_docs)]
+//#![forbid(missing_docs)]
 
 //! # PNETS
 //! Pnets is a framework for manipulating Petri nets

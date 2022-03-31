@@ -8,16 +8,23 @@ use crate::reducers::Reduce;
 /// Reduction for Election2020 net
 pub struct PseudoStart;
 
+impl PseudoStart {
+    /// Create a new pseudo start reducer
+    pub fn new() -> Self {
+        Self {}
+    }
+}
+
 impl Reduce<Net> for PseudoStart {
-    fn reduce(net: &mut Net, modifications: &mut Vec<Modification>) {
+    fn reduce(&self, net: &mut Net, modifications: &mut Vec<Modification>) {
         for pl in (0..net.places.len()).map(|pl| PlaceId::from(pl)) {
-            Self::place_reduce(net, pl, modifications);
+            self.place_reduce(net, pl, modifications);
         }
     }
 }
 
 impl PlaceReduce<Net> for PseudoStart {
-    fn place_reduce(net: &mut Net, pl: PlaceId, modifications: &mut Vec<Modification>) {
+    fn place_reduce(&self, net: &mut Net, pl: PlaceId, modifications: &mut Vec<Modification>) {
         if !net[pl].deleted
             && net[pl].initial == 1
             && net[pl].produced_by.is_empty()

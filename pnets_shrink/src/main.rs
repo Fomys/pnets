@@ -11,14 +11,11 @@ use pnets::NodeId;
 use pnets_pnml::ptnet::Ptnet;
 use pnets_shrink::modifications::Modification;
 use pnets_shrink::reducers::standard::{
-    IdentityPlaceReducer, IdentityTransitionReducer, InvariantReducer, ParallelPlaceReducer,
-    ParallelSmartReducer, ParallelTransitionReducer, PseudoStart, RLReducer, SimpleChainReducer,
-    SimpleLoopAgglomeration, SourceSinkReducer, WeightSimplification,
+    IdentityPlaceReducer, IdentityTransitionReducer, ParallelPlaceReducer,
+    ParallelTransitionReducer, PseudoStart, RLReducer, SimpleChainReducer, SimpleLoopAgglomeration,
+    SourceSinkReducer, WeightSimplification,
 };
-use pnets_shrink::reducers::{
-    Chain3Reducer, Chain4Reducer, Chain5Reducer, Chain6Reducer, Chain7Reducer, ChainReducer,
-    LoopReducer, Reduce, SmartReducer,
-};
+use pnets_shrink::reducers::{ChainReducer, IdentityReducer, LoopReducer, Reduce, SmartReducer};
 use pnets_tina::ExporterBuilder;
 
 #[derive(clap::ArgEnum, Clone, Copy)]
@@ -27,221 +24,6 @@ enum Format {
     Net,
     Guess,
 }
-
-type AllReductions<N> = LoopReducer<
-    N,
-    Chain6Reducer<
-        N,
-        ParallelSmartReducer<
-            N,
-            Chain5Reducer<
-                N,
-                ParallelSmartReducer<
-                    N,
-                    ChainReducer<N, IdentityPlaceReducer, SimpleLoopAgglomeration>,
-                >,
-                IdentityTransitionReducer,
-                SmartReducer<
-                    N,
-                    SimpleChainReducer,
-                    ChainReducer<N, IdentityPlaceReducer, SourceSinkReducer>,
-                    IdentityTransitionReducer,
-                >,
-                SourceSinkReducer,
-                PseudoStart,
-            >,
-        >,
-        RLReducer,
-        WeightSimplification,
-        ParallelPlaceReducer,
-        ParallelTransitionReducer,
-        InvariantReducer,
-    >,
->;
-
-type RedundantExtraCompactReducer<N> = LoopReducer<
-    N,
-    Chain5Reducer<
-        N,
-        ParallelSmartReducer<
-            N,
-            Chain5Reducer<
-                N,
-                ParallelSmartReducer<
-                    N,
-                    ChainReducer<N, IdentityPlaceReducer, SimpleLoopAgglomeration>,
-                >,
-                IdentityTransitionReducer,
-                SmartReducer<
-                    N,
-                    SimpleChainReducer,
-                    ChainReducer<N, IdentityPlaceReducer, SourceSinkReducer>,
-                    IdentityTransitionReducer,
-                >,
-                SourceSinkReducer,
-                PseudoStart,
-            >,
-        >,
-        RLReducer,
-        WeightSimplification,
-        ParallelPlaceReducer,
-        ParallelTransitionReducer,
-    >,
->;
-
-type ExtraReductions<N> =
-    LoopReducer<N, Chain3Reducer<N, PseudoStart, RLReducer, WeightSimplification>>;
-
-type ExtraStructReductions<N> = LoopReducer<
-    N,
-    Chain4Reducer<N, PseudoStart, RLReducer, WeightSimplification, InvariantReducer>,
->;
-
-type RedundantReductions<N> = LoopReducer<
-    N,
-    Chain3Reducer<
-        N,
-        ParallelSmartReducer<
-            N,
-            Chain3Reducer<
-                N,
-                ParallelSmartReducer<N, IdentityPlaceReducer>,
-                IdentityTransitionReducer,
-                SourceSinkReducer,
-            >,
-        >,
-        ParallelPlaceReducer,
-        ParallelTransitionReducer,
-    >,
->;
-
-type RedundantStructReductions<N> = LoopReducer<
-    N,
-    Chain3Reducer<
-        N,
-        ParallelSmartReducer<
-            N,
-            Chain4Reducer<
-                N,
-                ParallelSmartReducer<N, IdentityPlaceReducer>,
-                IdentityTransitionReducer,
-                SourceSinkReducer,
-                InvariantReducer,
-            >,
-        >,
-        ParallelPlaceReducer,
-        ParallelTransitionReducer,
-    >,
->;
-
-type RedundantExtraReductions<N> = LoopReducer<
-    N,
-    Chain3Reducer<
-        N,
-        ParallelSmartReducer<
-            N,
-            Chain6Reducer<
-                N,
-                ParallelSmartReducer<N, IdentityPlaceReducer>,
-                IdentityTransitionReducer,
-                SourceSinkReducer,
-                PseudoStart,
-                RLReducer,
-                WeightSimplification,
-            >,
-        >,
-        ParallelPlaceReducer,
-        ParallelTransitionReducer,
-    >,
->;
-
-type RedundantStructExtraReductions<N> = LoopReducer<
-    N,
-    Chain3Reducer<
-        N,
-        ParallelSmartReducer<
-            N,
-            Chain7Reducer<
-                N,
-                ParallelSmartReducer<N, IdentityPlaceReducer>,
-                IdentityTransitionReducer,
-                SourceSinkReducer,
-                PseudoStart,
-                RLReducer,
-                WeightSimplification,
-                InvariantReducer,
-            >,
-        >,
-        ParallelPlaceReducer,
-        ParallelTransitionReducer,
-    >,
->;
-
-type CompactReductions<N> =
-    LoopReducer<N, ChainReducer<N, SimpleLoopAgglomeration, SimpleChainReducer>>;
-type CompactStructReductions<N> =
-    LoopReducer<N, Chain3Reducer<N, SimpleLoopAgglomeration, SimpleChainReducer, InvariantReducer>>;
-
-type CompactExtraReductions<N> = LoopReducer<
-    N,
-    Chain5Reducer<
-        N,
-        SimpleLoopAgglomeration,
-        SimpleChainReducer,
-        PseudoStart,
-        RLReducer,
-        WeightSimplification,
-    >,
->;
-
-type CompactStructExtraReductions<N> = LoopReducer<
-    N,
-    Chain6Reducer<
-        N,
-        SimpleLoopAgglomeration,
-        SimpleChainReducer,
-        PseudoStart,
-        RLReducer,
-        WeightSimplification,
-        InvariantReducer,
-    >,
->;
-
-type CompactRedundantReductions<N> = LoopReducer<
-    N,
-    Chain5Reducer<
-        N,
-        ParallelSmartReducer<N, ChainReducer<N, IdentityPlaceReducer, SimpleLoopAgglomeration>>,
-        SmartReducer<
-            N,
-            SimpleChainReducer,
-            ChainReducer<N, IdentityPlaceReducer, SourceSinkReducer>,
-            IdentityTransitionReducer,
-        >,
-        SourceSinkReducer,
-        ParallelPlaceReducer, //
-        ParallelTransitionReducer,
-    >,
->;
-
-type CompactStructRedundantReductions<N> = LoopReducer<
-    N,
-    Chain7Reducer<
-        N,
-        ParallelSmartReducer<N, ChainReducer<N, IdentityPlaceReducer, SimpleLoopAgglomeration>>,
-        IdentityTransitionReducer,
-        SmartReducer<
-            N,
-            SimpleChainReducer,
-            ChainReducer<N, IdentityPlaceReducer, SourceSinkReducer>,
-            IdentityTransitionReducer,
-        >,
-        SourceSinkReducer,
-        ParallelPlaceReducer,
-        ParallelTransitionReducer,
-        InvariantReducer,
-    >,
->;
 
 #[derive(Parser)]
 #[clap(author, version, about, long_about = None)]
@@ -268,8 +50,267 @@ struct Args {
     compact: bool,
     #[clap(long)]
     extra: bool,
-    #[clap(long, name = "struct")]
-    struct_: bool,
+    #[clap(long, default_value_t=u64::MAX)]
+    max_iter: u64,
+}
+
+fn new_redundant_compact_extra(
+    args: &Args,
+) -> LoopReducer<
+    Net,
+    ChainReducer<
+        Net,
+        SmartReducer<
+            Net,
+            ChainReducer<
+                Net,
+                SmartReducer<
+                    Net,
+                    ChainReducer<Net, IdentityPlaceReducer, SimpleLoopAgglomeration>,
+                    ParallelPlaceReducer,
+                    ParallelTransitionReducer,
+                >,
+                ChainReducer<
+                    Net,
+                    IdentityTransitionReducer,
+                    ChainReducer<
+                        Net,
+                        SmartReducer<
+                            Net,
+                            SimpleChainReducer,
+                            ChainReducer<Net, IdentityPlaceReducer, SourceSinkReducer>,
+                            IdentityTransitionReducer,
+                        >,
+                        ChainReducer<Net, SourceSinkReducer, PseudoStart>,
+                    >,
+                >,
+            >,
+            ParallelPlaceReducer,
+            ParallelTransitionReducer,
+        >,
+        ChainReducer<
+            Net,
+            RLReducer,
+            ChainReducer<
+                Net,
+                WeightSimplification,
+                ChainReducer<Net, ParallelPlaceReducer, ParallelTransitionReducer>,
+            >,
+        >,
+    >,
+> {
+    LoopReducer::new(
+        ChainReducer::new5(
+            SmartReducer::new_parallel_smart_reducer(ChainReducer::new5(
+                SmartReducer::new_parallel_smart_reducer(ChainReducer::new2(
+                    IdentityPlaceReducer::new(),
+                    SimpleLoopAgglomeration::new(),
+                )),
+                IdentityTransitionReducer::new(),
+                SmartReducer::new(
+                    SimpleChainReducer::new(),
+                    ChainReducer::new2(IdentityPlaceReducer::new(), SourceSinkReducer::new()),
+                    IdentityTransitionReducer::new(),
+                ),
+                SourceSinkReducer::new(),
+                PseudoStart::new(),
+            )),
+            RLReducer::new(),
+            WeightSimplification::new(),
+            ParallelPlaceReducer::new(),
+            ParallelTransitionReducer::new(),
+        ),
+        args.max_iter,
+    )
+}
+
+fn new_redundant_compact(
+    args: &Args,
+) -> LoopReducer<
+    Net,
+    ChainReducer<
+        Net,
+        SmartReducer<
+            Net,
+            ChainReducer<Net, IdentityPlaceReducer, SimpleLoopAgglomeration>,
+            ParallelPlaceReducer,
+            ParallelTransitionReducer,
+        >,
+        ChainReducer<
+            Net,
+            SmartReducer<
+                Net,
+                SimpleChainReducer,
+                ChainReducer<Net, IdentityPlaceReducer, SourceSinkReducer>,
+                IdentityTransitionReducer,
+            >,
+            ChainReducer<
+                Net,
+                SourceSinkReducer,
+                ChainReducer<Net, ParallelPlaceReducer, ParallelTransitionReducer>,
+            >,
+        >,
+    >,
+> {
+    LoopReducer::new(
+        ChainReducer::new5(
+            SmartReducer::new_parallel_smart_reducer(ChainReducer::new2(
+                IdentityPlaceReducer::new(),
+                SimpleLoopAgglomeration::new(),
+            )),
+            SmartReducer::new(
+                SimpleChainReducer::new(),
+                ChainReducer::new2(IdentityPlaceReducer::new(), SourceSinkReducer::new()),
+                IdentityTransitionReducer::new(),
+            ),
+            SourceSinkReducer::new(),
+            ParallelPlaceReducer::new(),
+            ParallelTransitionReducer::new(),
+        ),
+        args.max_iter,
+    )
+}
+
+fn new_redundant_extra(
+    args: &Args,
+) -> LoopReducer<
+    Net,
+    ChainReducer<
+        Net,
+        SmartReducer<
+            Net,
+            ChainReducer<
+                Net,
+                SmartReducer<
+                    Net,
+                    IdentityPlaceReducer,
+                    ParallelPlaceReducer,
+                    ParallelTransitionReducer,
+                >,
+                ChainReducer<
+                    Net,
+                    IdentityTransitionReducer,
+                    ChainReducer<
+                        Net,
+                        SourceSinkReducer,
+                        ChainReducer<
+                            Net,
+                            PseudoStart,
+                            ChainReducer<Net, RLReducer, WeightSimplification>,
+                        >,
+                    >,
+                >,
+            >,
+            ParallelPlaceReducer,
+            ParallelTransitionReducer,
+        >,
+        ChainReducer<Net, ParallelPlaceReducer, ParallelTransitionReducer>,
+    >,
+> {
+    LoopReducer::new(
+        ChainReducer::new3(
+            SmartReducer::new_parallel_smart_reducer(ChainReducer::new6(
+                SmartReducer::new_parallel_smart_reducer(IdentityPlaceReducer::new()),
+                IdentityTransitionReducer::new(),
+                SourceSinkReducer::new(),
+                PseudoStart::new(),
+                RLReducer::new(),
+                WeightSimplification::new(),
+            )),
+            ParallelPlaceReducer::new(),
+            ParallelTransitionReducer::new(),
+        ),
+        args.max_iter,
+    )
+}
+
+fn new_redundant(
+    args: &Args,
+) -> LoopReducer<
+    Net,
+    ChainReducer<
+        Net,
+        SmartReducer<
+            Net,
+            ChainReducer<
+                Net,
+                SmartReducer<
+                    Net,
+                    IdentityPlaceReducer,
+                    ParallelPlaceReducer,
+                    ParallelTransitionReducer,
+                >,
+                ChainReducer<Net, IdentityTransitionReducer, SourceSinkReducer>,
+            >,
+            ParallelPlaceReducer,
+            ParallelTransitionReducer,
+        >,
+        ChainReducer<Net, ParallelPlaceReducer, ParallelTransitionReducer>,
+    >,
+> {
+    LoopReducer::new(
+        ChainReducer::new3(
+            SmartReducer::new_parallel_smart_reducer(ChainReducer::new3(
+                SmartReducer::new_parallel_smart_reducer(IdentityPlaceReducer::new()),
+                IdentityTransitionReducer::new(),
+                SourceSinkReducer::new(),
+            )),
+            ParallelPlaceReducer::new(),
+            ParallelTransitionReducer::new(),
+        ),
+        args.max_iter,
+    )
+}
+
+fn new_compact_extra(
+    args: &Args,
+) -> LoopReducer<
+    Net,
+    ChainReducer<
+        Net,
+        SimpleLoopAgglomeration,
+        ChainReducer<
+            Net,
+            SimpleChainReducer,
+            ChainReducer<Net, PseudoStart, ChainReducer<Net, RLReducer, WeightSimplification>>,
+        >,
+    >,
+> {
+    LoopReducer::new(
+        ChainReducer::new5(
+            SimpleLoopAgglomeration::new(),
+            SimpleChainReducer::new(),
+            PseudoStart::new(),
+            RLReducer::new(),
+            WeightSimplification::new(),
+        ),
+        args.max_iter,
+    )
+}
+
+fn new_compact(
+    args: &Args,
+) -> LoopReducer<Net, ChainReducer<Net, SimpleChainReducer, SimpleLoopAgglomeration>> {
+    LoopReducer::new(
+        ChainReducer::new2(SimpleChainReducer::new(), SimpleLoopAgglomeration::new()),
+        args.max_iter,
+    )
+}
+
+fn new_extra(
+    args: &Args,
+) -> LoopReducer<
+    Net,
+    ChainReducer<Net, PseudoStart, ChainReducer<Net, RLReducer, WeightSimplification>>,
+> {
+    LoopReducer::new(
+        ChainReducer::new3(
+            PseudoStart::new(),
+            RLReducer::new(),
+            WeightSimplification::new(),
+        ),
+        args.max_iter,
+    )
 }
 
 fn main() -> Result<(), Box<dyn Error>> {
@@ -301,50 +342,61 @@ fn main() -> Result<(), Box<dyn Error>> {
         }
         Format::Guess => pnets_tina::Parser::new(buf_reader).parse()?.into(),
     };
-
     info!("Parsing done: {:?}", now.elapsed()?);
     info!("Start reduction.");
     let mut modifications = vec![];
-    match (args.redundant, args.compact, args.extra, args.struct_) {
-        (true, true, true, true) => AllReductions::<_>::reduce(&mut net, &mut modifications),
-        (false, true, true, true) => {
-            CompactStructExtraReductions::<_>::reduce(&mut net, &mut modifications)
-        }
-        (true, false, true, true) => {
-            RedundantStructExtraReductions::<_>::reduce(&mut net, &mut modifications)
-        }
-        (false, false, true, true) => {
-            ExtraStructReductions::<_>::reduce(&mut net, &mut modifications)
-        }
-        (true, true, false, true) => {
-            CompactStructRedundantReductions::<_>::reduce(&mut net, &mut modifications)
-        }
-        (false, true, false, true) => {
-            CompactStructReductions::<_>::reduce(&mut net, &mut modifications)
-        }
-        (true, false, false, true) => {
-            RedundantStructReductions::<_>::reduce(&mut net, &mut modifications)
-        }
-        (false, false, false, true) => InvariantReducer::reduce(&mut net, &mut modifications),
-        (true, true, true, false) => {
-            RedundantExtraCompactReducer::<_>::reduce(&mut net, &mut modifications)
-        }
-        (false, true, true, false) => {
-            CompactExtraReductions::<_>::reduce(&mut net, &mut modifications)
-        }
-        (true, false, true, false) => {
-            RedundantExtraReductions::<_>::reduce(&mut net, &mut modifications)
-        }
-        (false, false, true, false) => ExtraReductions::<_>::reduce(&mut net, &mut modifications),
-        (true, true, false, false) => {
-            CompactRedundantReductions::<_>::reduce(&mut net, &mut modifications)
-        }
-        (false, true, false, false) => CompactReductions::<_>::reduce(&mut net, &mut modifications),
-        (true, false, false, false) => {
-            RedundantReductions::<_>::reduce(&mut net, &mut modifications)
-        }
-        (false, false, false, false) => {}
-    }
+
+    let reducer: Box<dyn Reduce<Net>> = match args {
+        Args {
+            redundant: true,
+            compact: true,
+            extra: true,
+            ..
+        } => Box::new(new_redundant_compact_extra(&args)),
+        Args {
+            redundant: true,
+            compact: true,
+            extra: false,
+            ..
+        } => Box::new(new_redundant_compact(&args)),
+        Args {
+            redundant: true,
+            compact: false,
+            extra: true,
+            ..
+        } => Box::new(new_redundant_extra(&args)),
+        Args {
+            redundant: true,
+            compact: false,
+            extra: false,
+            ..
+        } => Box::new(new_redundant(&args)),
+        Args {
+            redundant: false,
+            compact: true,
+            extra: true,
+            ..
+        } => Box::new(new_compact_extra(&args)),
+        Args {
+            redundant: false,
+            compact: true,
+            extra: false,
+            ..
+        } => Box::new(new_compact(&args)),
+        Args {
+            redundant: false,
+            compact: false,
+            extra: true,
+            ..
+        } => Box::new(new_extra(&args)),
+        Args {
+            redundant: false,
+            compact: false,
+            extra: false,
+            ..
+        } => Box::new(IdentityReducer::new()),
+    };
+    reducer.reduce(&mut net, &mut modifications);
 
     let now = SystemTime::now();
     info!(
@@ -387,7 +439,6 @@ fn write_modifications(
 ) -> Result<(), Box<dyn Error>> {
     writer.write_all("# generated equations\n".as_ref())?;
     for modification in modifications {
-        //println!("{:?}", modification);
         match modification {
             Modification::Agglomeration(agg) => {
                 if agg.factor == 1 {
